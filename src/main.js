@@ -12,7 +12,7 @@ const staticpath = path.join(__dirname, 'static');
 
 const tlsOptions = async (keypath, certpath) => ({
   key: await fsp.readFile(keypath),
-  cert: await fsp.readFile(certpath)
+  cert: await fsp.readFile(certpath),
 });
 
 const main = async () => {
