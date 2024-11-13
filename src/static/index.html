@@ -1,15 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-    input { border: 1px solid green; }
-    body { background-color: #333; color: whitesmoke; }
-  </style>
+  <link rel="stylesheet" href="main.css">
 </head>
 <body>
-  <h1>Chat</h1>
-  <div id="chat"></div>
-  <input id="msg" type="text">
-  <script src="main.js"></script>
+  <div class="page">
+    <header></header>
+    <main>
+      <div class="chats">
+        <div class="search-chats">
+          <input type="text" placeholder="Search">
+        </div>
+        <div class="chat-list">
+          <!-- 
+          <div class="chat">
+            <img src="./images/avatars/avatar1.jpg" alt="Avatar">
+            <div class="info">
+              <div class="top">
+                <div class="username">Marcus Aurelius</div>
+                <div class="time passive">10:55PM</div>
+              </div>
+              <div class="buttom">
+                <div class="message passive">Lorem ipsum dolor, sit amet consecteturt</div>
+                <div class="unread-messages">
+                  <div class="number">3</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chat">
+            <img src="./images/avatars/avatar2.jpg" alt="Avatar">
+            <div class="info">
+              <div class="top">
+                <div class="username">Antoninus Pius</div>
+                <div class="time passive">10:55PM</div>
+              </div>
+              <div class="buttom">
+                <div class="message passive">Lorem ipsum dolor, sit amet consectetur adipisicing elit</div>
+                <div class="unread-messages">
+                  <div class="number">1</div>
+                </div>
+              </div>
+            </div>
+          </div> 
+          -->
+        </div>
+      </div>
+      <div class="resizer"></div>
+      <div class="dialog">
+        <div class="top">
+          <!-- 
+          <div class="dialog-header">
+            <div class="left">
+              <div class="username">Antoninus Pius</div>
+              <div class="short-info">last seen recently</div>
+            </div>
+            <div class="right">
+              <div class="more-info">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+          </div>
+          -->
+        </div>
+        <div class="buttom">
+          <!--
+          <div class="messages">
+            <div class="my">
+              <div class="text">My messageMy messageMyMy messageMy messageMyMy messageMy messageMyMy messageMy messageMy</div><div class="time">10:52PM</div>
+            </div>
+            <div class="other">
+              <div class="text">Othher message</div><div class="time">10:53PM</div>
+            </div>
+          </div>
+          <div class="message-input">
+            <input type="text" placeholder="Write a message">
+          </div>
+          -->
+        </div>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="js/index/main.js"></script>
 </body>
 </html>
