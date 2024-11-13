@@ -8,12 +8,12 @@ create table "users" (
   "password"   varchar(64)
 );
 
-alter table "users" add constraint "pkUsers" primary key ("id", "username");
-create unique index "akUserUsername" on "users" ("username");
+alter table "users" add constraint "pkUsers" primary key ("id");
+create index "akUserUsername" on "users" ("username");
 
 create table chats (
-  "id"        "bigint" generated always as identity,
-  "name"      varchar(64) not null check (length("chatName") >= 1),
+  "id"        bigint generated always as identity,
+  "name"      varchar(64) not null check (length("name") >= 1),
   "createdAt" timestamptz default current_timestamp
 );
 
