@@ -1,3 +1,17 @@
 'use strict';
 
-module.exports = require('eslint-config-metarhia');
+const init = require('eslint-config-metarhia');
+
+module.exports = [
+  {
+    files: ['./'],
+    rules: init,
+  },
+  {
+    files: ['src/static'],
+    rules: {
+      ...init,
+      sourceType: 'module',
+    },
+  },
+];
