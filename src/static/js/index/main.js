@@ -4,7 +4,7 @@ import setResizing from './resizing.js';
 import Chat from './Chat.js';
 
 const getChats = async () => {
-  const response = await fetch('./chats.json');
+  const response = await fetch('chats.json');
   const json = await response.json();
   return json;
 };
