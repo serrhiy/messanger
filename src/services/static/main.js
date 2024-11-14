@@ -10,14 +10,22 @@ const prepareUrl = (url) => {
   return sliced.endsWith('/') ? sliced.slice(0, sliced.length - 1) : sliced;
 };
 
-module.exports = async (options, port, staticFolder) => {
+module.exports = async (options, port, staticFolder, controllers) => {
   const table = await routing(staticFolder);
   const routes = await cacheFiles(table);
   const types = contentType(table);
   const server = http2.createSecureServer(options);
   const notFound = routes.get('404');
-  server.on('stream', (stream, headers) => {
+  server.on('stream', async (stream, headers) => {
     const url = prepareUrl(headers[':path']);
+    if (url in controllers) {
+      const response = await controllers[url](headers);
+      if (response.redirect) {
+        const { status, location } = response;
+        stream.respond({ ':status': status, location });
+        return void stream.end();
+      }
+    }
     const exists = routes.has(url);
     const buffer = exists ? routes.get(url) : notFound;
     const type = types.get(url);
