@@ -7,7 +7,7 @@ module.exports = (extention, rootFileName = 'index') => {
   const prepareKey = (filepath) => {
     const { dir, name, ext } = path.parse(filepath);
     if (ext !== extention) return filepath;
-    const indexed = name === rootFileName ? '' : name;    
+    const indexed = name === rootFileName ? '' : name;
     const url = path.join(dir, indexed);
     return url === '.' ? '' : url;
   };
