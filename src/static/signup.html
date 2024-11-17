@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="css/signup/main.css">
+</head>
+<body>
+  <div class="page">
+    <h1 class="title">Sign up for my messenger</h1>
+    <p class="description">Please enter your data</p>
+    <form action="" method="post" enctype="multipart/form-data">
+      <div class="inputs">
+        <div class="input-solo">
+          <input type="text" placeholder="Username" />
+        </div>
+        <div class="double">
+          <div class="input-solo">
+            <input type="text" placeholder="First Name" />
+          </div>
+          <div class="input-solo">
+            <input type="text" placeholder="Second Name" />
+          </div>
+        </div>
+        <div class="double">
+          <div class="input-solo">
+            <input type="password" placeholder="Password" />
+          </div>
+          <div class="input-solo">
+            <input type="password" placeholder="Password again" />
+          </div>
+        </div>
+        <div class="file-input input-solo">
+          <label id="file-input-label" for="file-input">No file choosen</label>
+          <input id="file-input" type="file" accept="image/*" required />
+        </div>
+        <div class="submit input-solo">
+          <input type="submit" value="Log in">
+        </div>
+      </div>
+    </form>
+  </div>
+  <script src="js/signup/main.js"></script>
+</body>
+</html>
