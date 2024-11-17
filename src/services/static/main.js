@@ -12,11 +12,11 @@ const prepareUrl = (url) => {
 };
 
 module.exports = async (options, port, staticFolder, controllers) => {
-  const table = await routing('.html', null)(staticFolder);
+  const table = await routing(null, null)(staticFolder);
   const routes = await builtRoutes(table, cacheFile);
   const types = contentType(table);
   const server = http2.createSecureServer(options);
-  const notFound = routes.get('404');
+  const notFound = routes.get('404.html');
   server.on('stream', async (stream, headers) => {
     const url = prepareUrl(headers[':path']);
     const controller = controllers.get(url);
