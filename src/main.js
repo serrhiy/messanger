@@ -1,8 +1,6 @@
 'use strict';
 
 const path = require('node:path');
-// const https = require('node:https');
-// const WebSocket = require('websocket');
 const fsp = require('node:fs/promises');
 const loadEnv = require('./loadEnv.js');
 const parseCookie = require('./parseCookie.js');
@@ -25,9 +23,8 @@ const tlsOptions = async (keypath, certpath) => ({
 });
 
 const main = async () => {
-  const storage = await new Storage(sessionspath);
   const sandbox = {
-    storage,
+    storage: await new Storage(sessionspath),
     parseCookie,
     redirect: (location, status) => ({ status, location }),
     render: (location, status) => ({ status, location }),

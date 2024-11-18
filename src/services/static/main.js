@@ -19,17 +19,20 @@ module.exports = async (options, port, staticFolder, controllers) => {
   const notFound = routes.get('404.html');
   server.on('stream', async (stream, headers) => {
     const url = prepareUrl(headers[':path']);
-    const controller = controllers.get(url);
-    if (!controller) {
-      const staticData = routes.get(url);
-      const buffer = staticData ?? notFound;
+    const exists = controllers.get(url);
+    if (!exists) {
+      const isStatic = routes.has(url);
+      const found = isStatic && !url.endsWith('.html');
+      const buffer = found ? routes.get(url) : notFound;
+      const status = found ? 201 : 404;
       stream.respond({
+        ':status': status,
         'content-type': types.get(buffer),
         'content-encoding': 'gzip',
-        ':status': staticData ? 200 : 404,
       });
       return void stream.end(buffer);
     }
+    const controller = controllers.get(url); 
     const { status, location } = await controller(headers.cookie);
     if (status >= 300 && status < 400) {
       stream.respond({ location, ':status': status });
