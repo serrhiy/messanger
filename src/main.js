@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('node:path');
+const proxy = require('./proxy.js');
 const fsp = require('node:fs/promises');
 const loadEnv = require('./loadEnv.js');
 const apiServer = require('./services/http2');
@@ -20,7 +21,7 @@ const tlsOptions = async (keypath, certpath) => ({
 const main = async () => {
   const options = await tlsOptions(keypath, certpath);
   const { port, apiport } = await loadEnv(envpath);
-  staticServer(options, port, staticpath);
+  staticServer(options, port, staticpath, proxy);
   apiServer(options, apiport, apipath);
 };
 
