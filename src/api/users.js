@@ -3,13 +3,6 @@ const sessions = db('sessions');
 
 ({
   create: async (body, cookie) => {
-    const token = cookie.get('token');
-    if (token) {
-      const exists = await sessions.exists({ token });
-      if (exists) {
-        return { success: false, message: 'User has active token' };
-      }
-    }
     const hashed = common.hash(body.password);
     const user = { ...body, password: hashed };
     const newToken = common.generateToken();
