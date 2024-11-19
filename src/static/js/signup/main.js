@@ -17,7 +17,7 @@ form.addEventListener('submit', (event) => {
     username: username.value,
     firstName: firstName.value,
     secondName: secondName.value,
-    password: password1.value
+    password: password1.value,
   };
   for (const input of inputs) input.value = '';
   fetch(api, { method: 'post', body: JSON.stringify(result) });

@@ -28,7 +28,7 @@ module.exports = async (options, port, apipath) => {
       respondHeader['access-control-allow-origin'] = origin;
     }
     const controller = controllers.get(url);
-    const exists = controller && (type in controller);
+    const exists = controller && type in controller;
     if (exists) {
       const body = await getBody(stream);
       const data = JSON.parse(body.toString());

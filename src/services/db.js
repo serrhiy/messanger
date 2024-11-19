@@ -11,7 +11,7 @@ const pool = new pg.Pool({
 });
 
 module.exports = (table) => ({
-  query: async(sql, args) => await pool.query(sql, args),
+  query: async (sql, args) => await pool.query(sql, args),
 
   create: async (data) => {
     const names = Object.keys(data);
@@ -55,7 +55,7 @@ module.exports = (table) => ({
       const arg = '"' + key + '"=$' + index++;
       args.push(arg);
     }
-    const fields = '"' + args.join('", and "') + '"';;
+    const fields = '"' + args.join('", and "') + '"';
     const sql = `delete from "${table}" where ${fields}`;
     return await pool.query(sql, values);
   },
