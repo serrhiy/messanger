@@ -18,45 +18,51 @@ module.exports = (table) => ({
     const values = Object.values(data);
     const numbers = new Array(names.length);
     for (let i = 0; i < names.length; i++) numbers[i] = '$' + (i + 1);
-    const fields = '"' + names.join('", "') + '"';
+    const fields = '"' + names.join('","') + '"';
     const indices = numbers.join(',');
     const sql = `insert into "${table}" (${fields}) values (${indices})`;
     return await pool.query(sql, values);
   },
 
-  read: async (id, fields) => {
-    const names = fields.map((field) => `"${field}"`).join(',');
-    if (!id) return await pool.query(`select ${names} from "${table}"`);
-    const sql = `select ${names} from "{${table}" where id = $1`;
-    return await pool.query(sql, [id]);
+  read: async (fields, condition) => {
+    const fieldsNames = '"' + fields.join('","') + '"';
+    const conditions = [];
+    for (const [index, key] of enumerate(Object.keys(condition), 1)) {
+      const expression = `"${key}"=$${index}`
+      conditions.push(expression);
+    }
+    const strCondition = conditions.join(' and ');    
+    const sql = `select ${fieldsNames} from "${table}" where ${strCondition}`;
+    return await pool.query(sql, Object.values(condition));
   },
 
-  update: async (id, record) => {
-    const keys = Object.keys(record);
-    const updates = new Array(keys.length);
-    const data = new Array(keys.length);
-    let i = 0;
-    for (const key of keys) {
-      data[i] = record[key];
-      updates[i] = `${key} = $${++i}`;
+  update: async (selectors, record) => {
+    const values = [];
+    const conditions = [];
+    for (const [index, key] of enumerate(Object.keys(record), 1)) {
+      const value = `"${key}"=$${index}`
+      values.push(value);
     }
-    const delta = updates.join(', ');
-    const sql = `update "${table}" set ${delta} where id = $${++i}`;
-    data.push(id);
+    for (const [index, key] of enumerate(Object.keys(selectors), values.length + 1)) {
+      const expression = `"${key}"=$${index}`;
+      conditions.push(expression);
+    }
+    const condition = conditions.join(' and ');
+    const strValues = values.join(',');
+    const data = [...Object.values(record), ...Object.values(condition)];
+    const sql = `update "${table}" set (${strValues}) where ${condition}`;
     return pool.query(sql, data);
   },
 
-  delete: async ({ ...selectors }) => {
-    const args = [];
-    const values = [];
-    let index = 1;
-    for (const key in selectors) {
-      values.push(selectors[key]);
-      const arg = '"' + key + '"=$' + index++;
-      args.push(arg);
+  delete: async (selectors) => {
+    const conditions = [];
+    for (const [index, key] of enumerate(Object.keys(selectors), 1)) {
+      const condition = `"${key}"=$${index}`
+      conditions.push(condition);
     }
-    const fields = '"' + args.join('", and "') + '"';
-    const sql = `delete from "${table}" where ${fields}`;
-    return await pool.query(sql, values);
+    const condition = conditions.join(' and ');
+    const data = Object.values(selectors);
+    const sql = `delete from "${table}" where ${condition}`;
+    return await pool.query(sql, data);
   },
 });
