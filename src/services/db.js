@@ -47,7 +47,8 @@ module.exports = (table) => ({
     }
     const strCondition = conditions.join(' and ');
     const sql = `select ${fieldsNames} from "${table}" where ${strCondition}`;
-    return await pool.query(sql, Object.values(condition));
+    const { rows } = await pool.query(sql, Object.values(condition));
+    return rows;
   },
 
   update: async (selectors, record) => {
