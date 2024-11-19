@@ -9,7 +9,7 @@ create table "users" (
 );
 
 alter table "users" add constraint "pkUsers" primary key ("id");
-create index "akUserUsername" on "users" ("username");
+create unique index "akUserUsername" on "users" ("username");
 
 create table chats (
   "id"        bigint generated always as identity,

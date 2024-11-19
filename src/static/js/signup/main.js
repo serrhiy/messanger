@@ -1,6 +1,6 @@
 'use strict';
 
-const api = 'https://127.0.0.1:8080/users';
+const api = 'https://127.0.0.1:8080/signup';
 
 const form = document.getElementById('form');
 const username = document.getElementById('username');

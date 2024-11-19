@@ -7,17 +7,20 @@
   <div class="page">
     <h1 class="title">Log in to my messenger</h1>
     <p class="description">Please enter your username and password.</p>
-    <div class="inputs">
-      <div class="username">
-        <input type="text" placeholder="Username">
+    <form id="form" action="" method="post">
+      <div class="inputs">
+        <div class="username">
+          <input id="username" type="text" placeholder="Username">
+        </div>
+        <div class="password">
+          <input id="password" type="password" placeholder="Password">
+        </div>
+        <div class="submit">
+          <input type="submit" value="Log in">
+        </div>
       </div>
-      <div class="password">
-        <input type="password" placeholder="Password">
-      </div>
-      <div class="submit">
-        <input type="submit" value="Log in">
-      </div>
-    </div>
+    </form>
   </div>
+  <script type="module" src="js/login/main.js"></script>
 </body>
 </html>
