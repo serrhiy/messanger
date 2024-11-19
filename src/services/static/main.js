@@ -15,19 +15,19 @@ module.exports = async (options, port, staticFolder, proxy) => {
   const routes = await buildRoutes(table, cacheFile);
   const types = contentType(table);
   const server = http2.createSecureServer(options);
-  const notFound = routes.get('404.html');
+  const notFound = routes.get('404');
   server.on('stream', async (stream, headers) => {
     const url = prepareUrl(headers[':path']);
-    if (ishtml(url)) {
+    const exists = routes.has(url);
+    const buffer = exists ? routes.get(url) : notFound;
+    const code = exists ? 200 : 404;
+    if (ishtml(url) && exists) {
       const answer = await proxy(url, headers);
       if (!answer.success) {
         stream.respond({ ':status': 302, location: answer.path });
         return void stream.end();
       }
     }
-    const exists = routes.has(url);
-    const buffer = exists ? routes.get(url) : notFound;
-    const code = exists ? 200 : 404;
     stream.respond({
       ':status': code,
       'content-type': types.get(url),
