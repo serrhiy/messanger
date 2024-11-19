@@ -17,8 +17,7 @@ form.addEventListener('submit', async (event) => {
   const body = JSON.stringify(result);
   const options = { method: 'post', credentials: 'include', body };
   const response = await fetch(api, options);
-  console.log(response);
-  
   const json = await response.json();
   console.log({ json });
+  if (json.success) location.reload();
 });
