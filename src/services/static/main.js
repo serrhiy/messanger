@@ -18,7 +18,7 @@ module.exports = async (options, port, staticFolder, proxy) => {
     if (!url.includes('.')) {
       const answer = await proxy(url, headers);
       if (!answer.success) {
-        stream.respond({ ':status': 302, 'location': answer.path });
+        stream.respond({ ':status': 302, location: answer.path });
         return void stream.end();
       }
     }
