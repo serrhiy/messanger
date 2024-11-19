@@ -32,7 +32,7 @@ alter table "usersChats" add constraint "fkUsersChatsChatId"
   foreign key ("chatId") references "chats" ("id");
 
 create table "sessions" (
-  "token" varchar(128) NOT NULL,
+  "token" varchar(36) NOT NULL,
   "userId" integer NOT NULL
 );
 
