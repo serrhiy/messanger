@@ -30,3 +30,13 @@ alter table "usersChats" add constraint "fkUsersChatsUserId"
   foreign key ("userId") references "users" ("id");
 alter table "usersChats" add constraint "fkUsersChatsChatId" 
   foreign key ("chatId") references "chats" ("id");
+
+create table "session" (
+  "token" varchar(64) NOT NULL,
+  "user" integer NOT NULL
+);
+
+ALTER TABLE "session" ADD CONSTRAINT "pkSession" PRIMARY KEY ("token");
+CREATE UNIQUE INDEX "akSession" ON "session" ("token");
+ALTER TABLE "session" ADD CONSTRAINT "fkSessionUserId" FOREIGN KEY ("user")
+  REFERENCES "users" ("id") ON DELETE CASCADE;
