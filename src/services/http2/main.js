@@ -1,9 +1,11 @@
 'use strict';
 
+const load = require('../load.js');
 const http2 = require('node:http2');
-const loadjs = require('../loadjs.js');
 const getCookie = require('./getCookie.js');
+const routing = require('../staticRouting.js');
 const prepareUrl = require('../prepareUrl.js');
+const buildRoutes = require('../buildRoutes.js');
 
 const ALLOWED_DOMAIN = '127.0.0.1';
 
@@ -26,7 +28,8 @@ const sandbox = {
 
 module.exports = async (options, port, apipath) => {
   const server = http2.createSecureServer(options);
-  const controllers = await loadjs(apipath, sandbox);
+  const table = await routing('.js')(apipath);
+  const controllers = await buildRoutes(table, (file) => load(file, sandbox));
   server.on('stream', async (stream, headers) => {
     const url = prepareUrl(headers[':path']);
     const method = headers[':method'].toLowerCase();
