@@ -31,12 +31,12 @@ alter table "usersChats" add constraint "fkUsersChatsUserId"
 alter table "usersChats" add constraint "fkUsersChatsChatId" 
   foreign key ("chatId") references "chats" ("id");
 
-create table "session" (
+create table "sessions" (
   "token" varchar(64) NOT NULL,
-  "user" integer NOT NULL
+  "userId" integer NOT NULL
 );
 
-ALTER TABLE "session" ADD CONSTRAINT "pkSession" PRIMARY KEY ("token");
-CREATE UNIQUE INDEX "akSession" ON "session" ("token");
-ALTER TABLE "session" ADD CONSTRAINT "fkSessionUserId" FOREIGN KEY ("user")
+ALTER TABLE "sessions" ADD CONSTRAINT "pkSessions" PRIMARY KEY ("token");
+CREATE UNIQUE INDEX "akSession" ON "sessions" ("token");
+ALTER TABLE "sessions" ADD CONSTRAINT "fkSessionsUserId" FOREIGN KEY ("userId")
   REFERENCES "users" ("id") ON DELETE CASCADE;

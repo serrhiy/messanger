@@ -11,7 +11,7 @@ const password2 = document.getElementById('password2');
 
 const inputs = [username, firstName, secondName, password1, password2];
 
-form.addEventListener('submit', (event) => {
+form.addEventListener('submit', async (event) => {
   event.preventDefault();
   const result = {
     username: username.value,
@@ -20,5 +20,9 @@ form.addEventListener('submit', (event) => {
     password: password1.value,
   };
   for (const input of inputs) input.value = '';
-  fetch(api, { method: 'post', body: JSON.stringify(result) });
+  const body = JSON.stringify(result);
+  const options = { method: 'post', credentials: 'include', body };
+  const response = await fetch(api, options);
+  const json = await response.json();
+  console.log({ json });
 });
