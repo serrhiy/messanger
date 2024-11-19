@@ -21,7 +21,7 @@ const sandbox = {
   console,
   db: require('../db.js'),
   common: {
-    hash: require('../hash.js'),
+    ...require('../hash.js'),
     generateToken: require('../generateToken.js'),
   },
 };

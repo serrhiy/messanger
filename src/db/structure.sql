@@ -5,7 +5,7 @@ create table "users" (
   "username"   varchar(64) not null check (length("username") >= 3),
   "firstName"  varchar(64),
   "secondName" varchar(64),
-  "password"   varchar(64)
+  "password"   varchar(256)
 );
 
 alter table "users" add constraint "pkUsers" primary key ("id");
@@ -18,7 +18,7 @@ create table chats (
 );
 
 alter table "chats" add constraint "pkChats" primary key ("id");
-create index "akChatId" on "chats" (id);
+create index "akChatId" on "chats" ("id");
 
 create table "usersChats" (
   "userId" bigint not null,
@@ -32,7 +32,7 @@ alter table "usersChats" add constraint "fkUsersChatsChatId"
   foreign key ("chatId") references "chats" ("id");
 
 create table "sessions" (
-  "token" varchar(64) NOT NULL,
+  "token" varchar(128) NOT NULL,
   "userId" integer NOT NULL
 );
 

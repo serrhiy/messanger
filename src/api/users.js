@@ -3,7 +3,7 @@ const sessions = db('sessions');
 
 ({
   create: async (body, cookie) => {
-    const hashed = common.hash(body.password);
+    const hashed = await common.hashPassword(body.password);
     const user = { ...body, password: hashed };
     const newToken = common.generateToken();
     const { id } = await users.create(user);
