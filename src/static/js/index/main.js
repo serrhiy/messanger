@@ -9,8 +9,6 @@ const getChats = async () => {
   return json;
 };
 
-const api = 'https://127.0.0.1:8080/users';
-
 const main = async () => {
   setResizing();
   const data = await getChats();
@@ -23,9 +21,6 @@ const main = async () => {
       }, 3000);
     });
   }
-  const response = await fetch(api, { method: 'post', body: JSON.stringify({ type: 'read', data: { username: 'mar' }}), credentials: 'include' });
-  const json = await response.json();
-  console.log({ json });
 };
 
 main();

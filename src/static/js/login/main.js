@@ -1,6 +1,6 @@
 'use strict';
 
-const api = 'https://127.0.0.1:8080/users';
+import api from "../api.js";
 
 const username = document.getElementById('username');
 const password = document.getElementById('password');
@@ -14,10 +14,8 @@ form.addEventListener('submit', async (event) => {
   };
   username.value = '';
   password.value = '';
-  const body = JSON.stringify({ data, type: 'login' });
-  const options = { method: 'post', credentials: 'include', body };
-  const response = await fetch(api, options);
-  const json = await response.json();
-  console.log({ json });
-  if (json.success) location.reload();
+  console.log({ data });
+  const answer = await api.users.login(data);
+  console.log({ answer });
+  if (answer.success) location.reload();
 });
