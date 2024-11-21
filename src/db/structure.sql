@@ -5,6 +5,7 @@ create table "users" (
   "username"   varchar(64) not null check (length("username") >= 3),
   "firstName"  varchar(64),
   "secondName" varchar(64),
+  "avatar"     varchar(256),
   "password"   varchar(256)
 );
 

@@ -1,6 +1,6 @@
 'use strict';
 
-import api from "../api";
+import api from '../api.js';
 
 const form = document.getElementById('form');
 const username = document.getElementById('username');

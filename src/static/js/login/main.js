@@ -1,6 +1,6 @@
 'use strict';
 
-import api from "../api.js";
+import api from '../api.js';
 
 const username = document.getElementById('username');
 const password = document.getElementById('password');

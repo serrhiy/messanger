@@ -91,6 +91,7 @@ main {
   height: 4rem;
   border-radius: 2rem;
   display: block;
+  object-fit: cover;
 }
 
 .chat .info {

@@ -14,7 +14,7 @@ const buildNumber = (count) => {
   return number;
 };
 
-const buildChat = (user, avatar, text, date, unreadMessages) => {
+const buildChat = (user, avatar, text = '', date = '', unreadMessages = 0) => {
   const chat = document.createElement('div');
   const img = document.createElement('img');
   const info = document.createElement('div');
@@ -60,62 +60,76 @@ const buildChat = (user, avatar, text, date, unreadMessages) => {
 };
 
 export default class Chat {
-  #dialog = null;
   #chat = null;
-  #info = null;
-  #onMessage = null;
 
-  constructor(data) {
-    const {
-      user: { username, avatar },
-      messages,
-      unreadMessages,
-    } = data;
-    const { message, time } = messages[0];
-    const chat = buildChat(username, avatar, message, time, unreadMessages);
-    const dialog = new Dialog(username, messages);
-    chat.html.addEventListener('click', () => {
-      const active = document.getElementsByClassName('chat active').item(0);
-      if (active) active.classList.remove('active');
-      chat.html.classList.add('active');
-      buttom.innerHTML = '';
-      top.innerHTML = '';
-      dialog.generate();
-      if (this.#info.unreadMessages > 0) {
-        this.#info.unreadMessages = 0;
-        chat.unreadMessages(0);
-        dialog.scroll();
-      }
-    });
-    dialog.onMessage((message) => {
-      this.#onMessage?.(message);
-      chat.message(message);
-    });
-    this.#info = { username, avatar, message, time, unreadMessages };
-    this.#dialog = dialog;
+  constructor(user) {
+    const { firstName, secondName = '', avatar } = user;
+    const chat = buildChat(firstName + ' ' + secondName, avatar);
     this.#chat = chat;
   }
 
-  generate() {
-    chatList.appendChild(this.#chat.html);
-  }
-
-  addMessage(message) {
-    if (!this.isActive()) {
-      const count = ++this.#info.unreadMessages;
-      this.#chat.unreadMessages(count);
-    }
-    this.#dialog.addMessage(message, false);
-    this.#chat.message(message);
-  }
-
-  isActive() {
-    const active = document.getElementsByClassName('chat active').item(0);
-    return active === this.#chat.html;
-  }
-
-  onMessage(listener) {
-    this.#onMessage = listener;
-    return this;
+  html() {
+    return this.#chat.html;
   }
 }
+
+// export default class Chat {
+//   #dialog = null;
+//   #chat = null;
+//   #info = null;
+//   #onMessage = null;
+
+//   constructor(data) {
+//     const {
+//       user: { username, avatar },
+//       messages,
+//       unreadMessages,
+//     } = data;
+//     const { message, time } = messages[0];
+//     const chat = buildChat(username, avatar, message, time, unreadMessages);
+//     const dialog = new Dialog(username, messages);
+//     chat.html.addEventListener('click', () => {
+//       const active = document.getElementsByClassName('chat active').item(0);
+//       if (active) active.classList.remove('active');
+//       chat.html.classList.add('active');
+//       buttom.innerHTML = '';
+//       top.innerHTML = '';
+//       dialog.generate();
+//       if (this.#info.unreadMessages > 0) {
+//         this.#info.unreadMessages = 0;
+//         chat.unreadMessages(0);
+//         dialog.scroll();
+//       }
+//     });
+//     dialog.onMessage((message) => {
+//       this.#onMessage?.(message);
+//       chat.message(message);
+//     });
+//     this.#info = { username, avatar, message, time, unreadMessages };
+//     this.#dialog = dialog;
+//     this.#chat = chat;
+//   }
+
+//   generate() {
+//     chatList.appendChild(this.#chat.html);
+//   }
+
+//   addMessage(message) {
+//     if (!this.isActive()) {
+//       const count = ++this.#info.unreadMessages;
+//       this.#chat.unreadMessages(count);
+//     }
+//     this.#dialog.addMessage(message, false);
+//     this.#chat.message(message);
+//   }
+
+//   isActive() {
+//     const active = document.getElementsByClassName('chat active').item(0);
+//     return active === this.#chat.html;
+//   }
+
+//   onMessage(listener) {
+//     this.#onMessage = listener;
+//     return this;
+//   }
+// }

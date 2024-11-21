@@ -9,11 +9,11 @@ const queryByString = (fields, limit = 10) => {
   let index = 1;
   for (const [key, value] of Object.entries(fields)) {
     if (value === undefined) continue;
-    tokens.push(key + ' ilike $' + index);
+    tokens.push('"' + key + '" ilike $' + index);
     values.push('%' + value + '%');
     index++;
   }
-  const condition = tokens.join(' and ') + ' limit ' + limit;
+  const condition = tokens.join(' or ') + ' limit ' + limit;
   return { condition, values };
 };
 
@@ -57,8 +57,10 @@ const queryByString = (fields, limit = 10) => {
     if (id) return { success: true };
     const fields = { username, firstName, secondName };
     const { condition, values } = queryByString(fields);
-    const sql = `select "username", "firstName", "secondName" from users where ` + condition;
-    console.log(await users.query(sql, values));
-    return { success: true };
+    const sql =
+      `select "username", "firstName", "secondName", "avatar" from users where ` +
+      condition;
+    const persons = await users.query(sql, values);
+    return { success: true, users: persons };
   },
 });
