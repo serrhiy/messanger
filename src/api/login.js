@@ -8,7 +8,7 @@ const fields = ['username', 'password', 'id'];
     const { username, password } = body;
     const clients = await users.read(fields, { username });
     if (!clients.length) return { success: false, message: 'No such user' };
-    const [ user ] = clients;
+    const [user] = clients;
     const valid = await common.validatePassword(password, user.password);
     if (!valid) return { success: false, message: 'Invalid password' };
     const oldToken = cookie.get('token');
@@ -17,7 +17,7 @@ const fields = ['username', 'password', 'id'];
       if (session.length !== 0) {
         const { token } = session[0];
         cookie.set('token', token);
-        return { success: true };  
+        return { success: true };
       }
     }
     const token = await common.generateToken();

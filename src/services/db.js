@@ -58,10 +58,8 @@ module.exports = (table) => ({
       const value = `"${key}"=$${index}`;
       values.push(value);
     }
-    for (const [index, key] of enumerate(
-      Object.keys(selectors),
-      values.length + 1,
-    )) {
+    const iterator = enumerate(Object.keys(selectors), values.length + 1);
+    for (const [index, key] of iterator) {
       const expression = `"${key}"=$${index}`;
       conditions.push(expression);
     }
