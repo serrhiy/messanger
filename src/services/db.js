@@ -24,7 +24,7 @@ const enumerate = (array, start = 0) => ({
 });
 
 module.exports = (table) => ({
-  query: async (sql, args) => await pool.query(sql, args),
+  query: async (sql, args) => (await pool.query(sql, args)).rows,
 
   create: async (data) => {
     const names = Object.keys(data);

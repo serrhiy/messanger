@@ -11,7 +11,7 @@ create table "users" (
 alter table "users" add constraint "pkUsers" primary key ("id");
 create unique index "akUserUsername" on "users" ("username");
 
-create table chats (
+create table "chats" (
   "id"        bigint generated always as identity,
   "name"      varchar(64) not null check (length("name") >= 1),
   "createdAt" timestamptz default current_timestamp
@@ -36,7 +36,7 @@ create table "sessions" (
   "userId" integer NOT NULL
 );
 
-ALTER TABLE "sessions" ADD CONSTRAINT "pkSessions" PRIMARY KEY ("token");
-CREATE UNIQUE INDEX "akSession" ON "sessions" ("token");
-ALTER TABLE "sessions" ADD CONSTRAINT "fkSessionsUserId" FOREIGN KEY ("userId")
-  REFERENCES "users" ("id") ON DELETE CASCADE;
+alter table "sessions" add constraint "pkSessions" primary key ("token");
+create unique index "akSession" on "sessions" ("token");
+alter table "sessions" add constraint "fkSessionsUserId" foreign key ("userId")
+  references "users" ("id") on delete cascade;

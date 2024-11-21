@@ -12,10 +12,8 @@ const ALLOWED_DOMAIN = '127.0.0.1';
 const getBody = async (stream) => {
   const chunks = [];
   for await (const chunk of stream) chunks.push(chunk);
-  return Buffer.concat(chunks);
+  return chunks.length ? Buffer.concat(chunks) : null;
 };
-
-const crud = { get: 'read', post: 'create', put: 'update', delete: 'delete' };
 
 const sandbox = {
   console,
@@ -33,7 +31,6 @@ module.exports = async (options, port, apipath) => {
   server.on('stream', async (stream, headers) => {
     const url = prepareUrl(headers[':path']);
     const method = headers[':method'].toLowerCase();
-    const type = crud[method];
     const { origin = '' } = headers;
     const cookies = [];
     const respondHeader = {
@@ -44,16 +41,17 @@ module.exports = async (options, port, apipath) => {
       respondHeader['access-control-allow-origin'] = origin;
       respondHeader['access-control-allow-credentials'] = true;
     }
-    const controller = controllers.get(url);
-    const exists = controller && type in controller;
-    if (exists) {
+    if (controllers.has(url)) {
+      const controller = controllers.get(url);
       const body = await getBody(stream);
-      const data = JSON.parse(body.toString());
-      const cookie = getCookie(cookies, headers.cookie);
-      const answer = await controller[type](data, cookie);
-      respondHeader[':status'] = 200;
-      stream.respond(respondHeader);
-      return void stream.end(JSON.stringify(answer));
+      const { data, type } = JSON.parse(body.toString());
+      if (type in controller) {
+        const cookie = getCookie(cookies, headers.cookie);
+        const answer = await controller[type](data, cookie);
+        respondHeader[':status'] = 200;
+        stream.respond(respondHeader);
+        return void stream.end(JSON.stringify(answer));
+      }
     }
     respondHeader[':status'] = 404;
     stream.respond(respondHeader);
