@@ -14,7 +14,7 @@ create unique index "akUserUsername" on "users" ("username");
 
 create table "chats" (
   "id"        bigint generated always as identity,
-  "name"      varchar(64) not null check (length("name") >= 1),
+  "name"      varchar(64) check (length("name") >= 1),
   "createdAt" timestamptz default current_timestamp
 );
 
