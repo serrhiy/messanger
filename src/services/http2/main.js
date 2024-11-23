@@ -7,12 +7,19 @@ const routing = require('../staticRouting.js');
 const prepareUrl = require('../prepareUrl.js');
 const buildRoutes = require('../buildRoutes.js');
 
-const ALLOWED_DOMAIN = '127.0.0.1';
-
 const getBody = async (stream) => {
   const chunks = [];
   for await (const chunk of stream) chunks.push(chunk);
   return chunks.length ? Buffer.concat(chunks) : null;
+};
+
+const parseBody = async (stream) => {
+  try {
+    const body = await getBody(stream);
+    return JSON.parse(body.toString());
+  } catch {
+    return null;
+  }
 };
 
 const sandbox = {
@@ -24,38 +31,39 @@ const sandbox = {
   },
 };
 
+const defaultCookie = (cookie) => ({
+  'content-type': 'application/json',
+  'access-control-allow-origin': 'https://localhost:8000',
+  'access-control-allow-credentials': true,
+  ...cookie,
+});
+
 module.exports = async (options, port, apipath) => {
   const server = http2.createSecureServer(options);
   const table = await routing('.js')(apipath);
   const controllers = await buildRoutes(table, (file) => load(file, sandbox));
   server.on('stream', async (stream, headers) => {
     const url = prepareUrl(headers[':path']);
-    const method = headers[':method'].toLowerCase();
-    const { origin = '' } = headers;
+    console.log(headers['origin']);
+    if (!controllers.has(url)) {
+      stream.respond(defaultCookie({ ':status': 404 }));
+      const answer = { success: false, message: 'Invalid url' };
+      return void stream.end(JSON.stringify(answer));
+    }
+    const controller = controllers.get(url);
+    const body = await parseBody(stream);
+    console.log({ body });
+    if (!body || !body.type || !controller[body.type]) {
+      stream.respond(defaultCookie({ ':status': 404 }));
+      const answer = { success: false, message: 'Invalid body' };
+      return void stream.end(JSON.stringify(answer));
+    }
     const cookies = [];
-    const respondHeader = {
-      'content-type': 'application/json',
-      'set-cookie': cookies,
-    };
-    if (origin.includes(ALLOWED_DOMAIN)) {
-      respondHeader['access-control-allow-origin'] = origin;
-      respondHeader['access-control-allow-credentials'] = true;
-    }
-    if (controllers.has(url)) {
-      const controller = controllers.get(url);
-      const body = await getBody(stream);
-      const { data, type } = JSON.parse(body.toString());
-      if (type in controller) {
-        const cookie = getCookie(cookies, headers.cookie);
-        const answer = await controller[type](data, cookie);
-        respondHeader[':status'] = 200;
-        stream.respond(respondHeader);
-        return void stream.end(JSON.stringify(answer));
-      }
-    }
-    respondHeader[':status'] = 404;
-    stream.respond(respondHeader);
-    stream.end('Not found');
+    const { data, type } = body;
+    const cookie = getCookie(cookies, headers.cookie);
+    const answer = await controller[type](data, cookie);
+    stream.respond(defaultCookie({ 'set-cookie': cookies, ':status': 200 }));
+    stream.end(JSON.stringify(answer));
   });
   server.listen(port);
 };

@@ -16,9 +16,7 @@ searchInput.addEventListener('input', async () => {
   for (const user of users) {
     const chat = new Chat(user);
     chatList.appendChild(chat.html());
-    chat.addEventListener('click', () => {
-      
-    });
+    chat.addEventListener('click', () => {});
   }
 });
 
