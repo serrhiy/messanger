@@ -6,11 +6,15 @@ create table "users" (
   "firstName"  varchar(64),
   "secondName" varchar(64),
   "avatar"     varchar(256),
-  "password"   varchar(256)
+  "password"   varchar(256),
+  "token"      varchar(36) NOT NULL
 );
 
 alter table "users" add constraint "pkUsers" primary key ("id");
 create unique index "akUserUsername" on "users" ("username");
+create index "akUserFirstName" on "users" ("firstName");
+create index "akUserSecondName" on "users" ("secondName");
+create unique index "akUserToken" on "users" ("token");
 
 create table "chats" (
   "id"        bigint generated always as identity,
@@ -32,12 +36,18 @@ alter table "usersChats" add constraint "fkUsersChatsUserId"
 alter table "usersChats" add constraint "fkUsersChatsChatId" 
   foreign key ("chatId") references "chats" ("id");
 
-create table "sessions" (
-  "token" varchar(36) NOT NULL,
-  "userId" integer NOT NULL
+create table "messages" (
+  "id"        bigint not null,
+  "message"   text not null check (length("message") >= 1),
+  "chatId"    bigint not null,
+  "userId"    bigint not null,
+  "createdAt" timestamptz default current_timestamp
 );
 
-alter table "sessions" add constraint "pkSessions" primary key ("token");
-create unique index "akSession" on "sessions" ("token");
-alter table "sessions" add constraint "fkSessionsUserId" foreign key ("userId")
-  references "users" ("id") on delete cascade;
+alter table "messages" add constraint "pkMessages" primary key ("id");
+alter table "messages" add constraint "fkMessagesChatIdChats"
+  foreign key ("chatId") references "chats" ("id");
+alter table "messages" add constraint "fkMessagesUserIdUsers"
+  foreign key ("userId") references "users" ("id");
+create index "akMessageChatId" on "messages" ("chatId");
+create index "akMessageUserId" on "messages" ("userId");
