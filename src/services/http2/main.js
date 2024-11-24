@@ -31,9 +31,9 @@ const sandbox = {
   },
 };
 
-const defaultCookie = (cookie) => ({
+const defaultHeaders = (cookie, origin = 'null') => ({
   'content-type': 'application/json',
-  'access-control-allow-origin': 'https://localhost:8000',
+  'access-control-allow-origin': origin,
   'access-control-allow-credentials': true,
   ...cookie,
 });
@@ -44,17 +44,16 @@ module.exports = async (options, port, apipath) => {
   const controllers = await buildRoutes(table, (file) => load(file, sandbox));
   server.on('stream', async (stream, headers) => {
     const url = prepareUrl(headers[':path']);
-    console.log(headers['origin']);
+    const { origin } = headers;
     if (!controllers.has(url)) {
-      stream.respond(defaultCookie({ ':status': 404 }));
+      stream.respond(defaultHeaders({ ':status': 404 }, origin));
       const answer = { success: false, message: 'Invalid url' };
       return void stream.end(JSON.stringify(answer));
     }
     const controller = controllers.get(url);
     const body = await parseBody(stream);
-    console.log({ body });
     if (!body || !body.type || !controller[body.type]) {
-      stream.respond(defaultCookie({ ':status': 404 }));
+      stream.respond(defaultHeaders({ ':status': 404 }, origin));
       const answer = { success: false, message: 'Invalid body' };
       return void stream.end(JSON.stringify(answer));
     }
@@ -62,7 +61,8 @@ module.exports = async (options, port, apipath) => {
     const { data, type } = body;
     const cookie = getCookie(cookies, headers.cookie);
     const answer = await controller[type](data, cookie);
-    stream.respond(defaultCookie({ 'set-cookie': cookies, ':status': 200 }));
+    const responseHeaders = { 'set-cookie': cookies, ':status': 200 };
+    stream.respond(defaultHeaders(responseHeaders, origin));
     stream.end(JSON.stringify(answer));
   });
   server.listen(port);
