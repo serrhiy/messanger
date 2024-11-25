@@ -1,15 +1,15 @@
 'use strict';
 
-const db = require('./services/db.js');
+const db = require('./db.js');
 const parseCookie = require('./services/parseCookie.js');
 
-const sessions = db('sessions');
+const users = db('users');
 
 module.exports = async (url, headers) => {
   const cookie = parseCookie(headers.cookie);
   const { token } = cookie;
   if (token) {
-    const exists = await sessions.exists({ token });
+    const exists = await users.exists({ token });
     if (exists) {
       if (url !== '') return { success: false, path: '/' };
       return { success: true };

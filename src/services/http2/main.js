@@ -1,11 +1,23 @@
 'use strict';
 
-const load = require('../load.js');
 const http2 = require('node:http2');
 const getCookie = require('./getCookie.js');
-const routing = require('../staticRouting.js');
 const prepareUrl = require('../prepareUrl.js');
-const buildRoutes = require('../buildRoutes.js');
+
+const isDataValid = (data, structure) => {
+  for (const [field, { mandatory, validators }] of Object.entries(structure)) {
+    const exists = field in data;
+    if (!exists) {
+      if (mandatory) return false;
+      continue;
+    }
+    const value = data[field];
+    for (const validator of validators) {
+      if (!validator(value)) return false;
+    }
+  }
+  return true;
+};
 
 const getBody = async (stream) => {
   const chunks = [];
@@ -22,15 +34,6 @@ const parseBody = async (stream) => {
   }
 };
 
-const sandbox = {
-  console,
-  db: require('../db.js'),
-  common: {
-    ...require('../hash.js'),
-    generateToken: require('../generateToken.js'),
-  },
-};
-
 const defaultHeaders = (cookie, origin = 'null') => ({
   'content-type': 'application/json',
   'access-control-allow-origin': origin,
@@ -38,10 +41,8 @@ const defaultHeaders = (cookie, origin = 'null') => ({
   ...cookie,
 });
 
-module.exports = async (options, port, apipath) => {
+module.exports = async (options, port, controllers, validator) => {
   const server = http2.createSecureServer(options);
-  const table = await routing('.js')(apipath);
-  const controllers = await buildRoutes(table, (file) => load(file, sandbox));
   server.on('stream', async (stream, headers) => {
     const url = prepareUrl(headers[':path']);
     const { origin } = headers;
@@ -50,17 +51,29 @@ module.exports = async (options, port, apipath) => {
       const answer = { success: false, message: 'Invalid url' };
       return void stream.end(JSON.stringify(answer));
     }
-    const controller = controllers.get(url);
+    const services = controllers.get(url);
     const body = await parseBody(stream);
-    if (!body || !body.type || !controller[body.type]) {
-      stream.respond(defaultHeaders({ ':status': 404 }, origin));
+    const validStructure = body !== null && body.service in services;
+    if (!validStructure) {      
+      stream.respond(defaultHeaders({ ':status': 400 }, origin));
       const answer = { success: false, message: 'Invalid body' };
       return void stream.end(JSON.stringify(answer));
     }
+    const { controller, structure, needToken } = services[body.service];
+    if (!isDataValid(body.data, structure)) {
+      stream.respond(defaultHeaders({ ':status': 400 }, origin));
+      const answer = { success: false, message: 'Invalid structure' };
+      return void stream.end(JSON.stringify(answer));
+    }
     const cookies = [];
-    const { data, type } = body;
     const cookie = getCookie(cookies, headers.cookie);
-    const answer = await controller[type](data, cookie);
+    const success = await validator({ needToken }, cookie);
+    if (!success) {
+      stream.respond(defaultHeaders({ ':status': 401 }, origin));
+      const answer = { success: false, message: 'Invalid token' };
+      return void stream.end(JSON.stringify(answer));
+    }
+    const answer = await controller(body.data, cookie);
     const responseHeaders = { 'set-cookie': cookies, ':status': 200 };
     stream.respond(defaultHeaders(responseHeaders, origin));
     stream.end(JSON.stringify(answer));

@@ -12,7 +12,7 @@ export default (transport) =>
       const functions = Object.create(null);
       for (const service of services) {
         functions[service] = async (data) => {
-          const send = { data, type: service };
+          const send = { data, service };
           return await transport(path, send);
         };
       }

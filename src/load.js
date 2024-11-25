@@ -5,7 +5,7 @@ const vm = require('node:vm');
 
 const RUN_OPTIONS = { timeout: 5000, displayErrors: false };
 
-module.exports = async (filename, sandbox) => {
+module.exports = (sandbox) => async (filename) => {
   const code = await fsp.readFile(filename);
   const source = `'use strict';${code}`;
   const script = new vm.Script(source);

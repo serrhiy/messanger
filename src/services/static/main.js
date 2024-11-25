@@ -4,16 +4,18 @@ const path = require('node:path');
 const http2 = require('node:http2');
 const cacheFile = require('./cacheFile.js');
 const prepareUrl = require('../prepareUrl.js');
-const routing = require('../staticRouting.js');
+const resolvePaths = require('../../resolvePaths.js');
 const contentType = require('./contentType.js');
-const buildRoutes = require('../buildRoutes.js');
+const mapValues = require('../../mapValues.js');
+const buildStaticUrls = require('../../buildStaticUrls.js');
 
 const ishtml = (url) => path.extname(url) === '';
 
 module.exports = async (options, port, staticFolder, proxy) => {
-  const table = await routing('.html')(staticFolder);
-  const routes = await buildRoutes(table, cacheFile);
-  const types = contentType(table);
+  const paths = await resolvePaths(staticFolder);
+  const staticUrls = buildStaticUrls(paths, ['.html']);
+  const routes = await mapValues(staticUrls, cacheFile);
+  const types = contentType(paths);
   const server = http2.createSecureServer(options);
   const notFound = routes.get('404');
   server.on('stream', async (stream, headers) => {

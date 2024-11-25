@@ -1,5 +1,6 @@
 const users = db('users');
-const sessions = db('sessions');
+
+const isString = (value) => typeof value === 'string';
 
 const fields = ['username', 'password', 'id'];
 
@@ -18,49 +19,82 @@ const queryByString = (fields, limit = 10) => {
 };
 
 ({
-  create: async (body, cookie) => {
-    const hashed = await common.hashPassword(body.password);
-    const user = { ...body, password: hashed };
-    const newToken = common.generateToken();
-    const { id } = await users.create(user);
-    await sessions.create({ userId: id, token: newToken });
-    cookie.set('token', newToken);
-    return { success: true };
-  },
-
-  login: async (body, cookie) => {
-    const { username, password } = body;
-    const clients = await users.read(fields, { username });
-    if (!clients.length) return { success: false, message: 'No such user' };
-    const [user] = clients;
-    const valid = await common.validatePassword(password, user.password);
-    if (!valid) return { success: false, message: 'Invalid password' };
-    const oldToken = cookie.get('token');
-    if (!oldToken) {
-      const session = await sessions.read(['token'], { userId: user.id });
-      if (session.length !== 0) {
-        const { token } = session[0];
-        cookie.set('token', token);
-        return { success: true };
+  create: {
+    needToken: false,
+    structure: {
+      username: {
+        mandatory: true,
+        validators: [isString, (str) => str.length >= 3]
+      },
+      firstName: {
+        mandatory: true,
+        validators: [isString, (str) => str.length >= 2]
+      },
+      secondName: {
+        mandatory: true,
+        validators: [isString, (str) => str.length >= 2]
+      },
+      password: {
+        mandatory: true,
+        validators: [isString, (str) => str.length >= 4]
       }
-    }
-    const token = await common.generateToken();
-    const exists = await sessions.exists({ token: oldToken });
-    if (exists) await sessions.update({ token, userId: user.id }, { token });
-    else await sessions.create({ token, userId: user.id });
-    cookie.set('token', token);
-    return { success: true };
+    },
+    controller: async (body, cookie) => {
+      const { username, password } = body;
+      const exists = await users.exists({ username });
+      if (exists) {
+        return { success: false, message: `User ${username} already exists` };
+      }
+      const hashed = await common.hashPassword(password);
+      const token = common.generateToken();
+      await users.create({ ...body, password: hashed, token });
+      cookie.set('token', token);
+      return { success: true };
+    },
   },
 
-  read: async (body) => {
-    const { id, username, firstName, secondName } = body;
-    if (id) return { success: true };
-    const fields = { username, firstName, secondName };
-    const { condition, values } = queryByString(fields);
-    const sql =
-      `select "username", "firstName", "secondName", "avatar" from users where ` +
-      condition;
-    const persons = await users.query(sql, values);
-    return { success: true, users: persons };
+  login: {
+    needToken: false,
+    structure: {
+      username: {
+        mandatory: true,
+        validators: [isString, (str) => str.length >= 3],
+      },
+      password: {
+        mandatory: true,
+        validators: [isString, (str) => str.length >= 4]
+      }
+    },
+    controller: async ({ username, password }, cookie) => {      
+      const persons = await users.read(['password', 'token'], { username });
+      if (persons.length === 0) {
+        return { success: false, message: 'User doesn\'t exist' };
+      }
+      const user = persons[0];
+      const valid = await common.validatePassword(password, user.password);
+      if (!valid) return { success: false, message: 'Invalid password' };
+      cookie.set('token', user.token);
+      return { success: true };
+    },
+  },
+
+  read: {
+    needToken: true,
+    structure: {
+      username: { mandatory: false, validators: [isString] },
+      firstName: { mandatory: false, validators: [isString] },
+      secondName: { mandatory: false, validators: [isString] },
+      id: { mandatory: false, validators: [Number.isInteger] },
+    },
+    controller: async (body) => {
+      const { username, firstName, secondName } = body;
+      const fields = { username, firstName, secondName };
+      const { condition, values } = queryByString(fields);
+      const sql =
+        `select "username", "firstName", "secondName", "avatar" from users where ` +
+        condition;
+      const persons = await users.query(sql, values);
+      return { success: true, users: persons };
+    },
   },
 });
