@@ -62,10 +62,9 @@ const buildChat = (user, avatar, text = '', date = '', unreadMessages = 0) => {
 export default class Chat extends EventTarget {
   #chat = null;
 
-  constructor(user) {
+  constructor({ name, avatar, text, date, unreadMessages }) {
     super();
-    const { firstName, secondName = '', avatar } = user;
-    const chat = buildChat(firstName + ' ' + secondName, avatar);
+    const chat = buildChat(name, avatar, text, date, unreadMessages);
     chat.html.addEventListener('click', () => {
       this.dispatchEvent(new CustomEvent('click'));
     });
@@ -74,6 +73,10 @@ export default class Chat extends EventTarget {
 
   html() {
     return this.#chat.html;
+  }
+
+  get raw() {
+    return structuredClone(this.#chat);
   }
 }
 

@@ -2,8 +2,6 @@ const users = db('users');
 
 const isString = (value) => typeof value === 'string';
 
-const fields = ['username', 'password', 'id'];
-
 const queryByString = (fields, limit = 10) => {
   const tokens = [];
   const values = [];
@@ -91,10 +89,22 @@ const queryByString = (fields, limit = 10) => {
       const fields = { username, firstName, secondName };
       const { condition, values } = queryByString(fields);
       const sql =
-        `select "username", "firstName", "secondName", "avatar" from users where ` +
+        `select "id", "username", "firstName", "secondName", "avatar" from users where ` +
         condition;
       const persons = await users.query(sql, values);
-      return { success: true, users: persons };
+      return { success: true, data: persons };
     },
   },
+
+  me: {
+    needToken: true,
+    structure: {},
+    controller: async (body, cookie) => {
+      const fields = ['id', 'username', 'firstName', 'secondName'];
+      const token = cookie.get('token');
+      const user = await users.read(fields, { token });
+      
+      return { success: true, data: user[0] };
+    }
+  }
 });

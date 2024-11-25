@@ -1,5 +1,6 @@
 'use strict';
 
 export default {
-  users: ['create', 'login', 'read'],
+  users: ['create', 'login', 'read', 'me'],
+  chats: ['create', 'read'],
 };

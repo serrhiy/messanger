@@ -19,6 +19,8 @@ create unique index "akUserToken" on "users" ("token");
 create table "chats" (
   "id"        bigint generated always as identity,
   "name"      varchar(64) check (length("name") >= 1),
+  "avatar"    varchar(256),
+  "isDialog"  boolean default true,
   "createdAt" timestamptz default current_timestamp
 );
 
@@ -37,7 +39,7 @@ alter table "usersChats" add constraint "fkUsersChatsChatId"
   foreign key ("chatId") references "chats" ("id");
 
 create table "messages" (
-  "id"        bigint not null,
+  "id"        bigint generated always as identity,
   "message"   text not null check (length("message") >= 1),
   "chatId"    bigint not null,
   "userId"    bigint not null,

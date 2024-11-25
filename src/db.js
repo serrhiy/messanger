@@ -38,14 +38,14 @@ module.exports = (table) => ({
     return rows[0];
   },
 
-  read: async (fields, condition) => {
+  read: async (fields, condition, joiner = 'and') => {
     const fieldsNames = '"' + fields.join('","') + '"';
     const conditions = [];
     for (const [index, key] of enumerate(Object.keys(condition), 1)) {
       const expression = `"${key}"=$${index}`;
       conditions.push(expression);
     }
-    const strCondition = conditions.join(' and ');
+    const strCondition = conditions.join(` ${joiner} `);
     const sql = `select ${fieldsNames} from "${table}" where ${strCondition}`;
     const { rows } = await pool.query(sql, Object.values(condition));
     return rows;
