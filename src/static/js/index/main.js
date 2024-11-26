@@ -37,6 +37,12 @@ const onSerach = (me) => async () => {
   }
 };
 
+const onMessage = (event) => {
+  const { detail: message, target: chat } = event;
+  console.log({ message, chat });
+  
+};
+
 const main = async () => {
   setResizing();
   const me = await api.users.me();
@@ -50,6 +56,7 @@ const main = async () => {
     const name = firstName + ' ' + secondName;
     const data = { name, avatar, createdAt, chatId, isDialog, user };
     const chat = new Chat(data);
+    chat.addEventListener('message', onMessage);
     chats.push(chat);
   }
   chats.draw();

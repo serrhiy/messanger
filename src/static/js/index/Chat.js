@@ -88,7 +88,8 @@ export default class Chat extends EventTarget {
       }
     });
     dialog.onMessage((message) => {
-      this.dispatchEvent(new CustomEvent(message, { detail: message }));
+      const event = new CustomEvent('message', { detail: message });
+      this.dispatchEvent(event);
       chat.message(message);
     });
     this.#dialog = dialog;

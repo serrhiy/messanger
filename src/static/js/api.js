@@ -1,7 +1,7 @@
 'use strict';
 
-import structure from './structure.js';
+import endpoints from './endpoints.js';
 import scaffold from './scaffold.js';
-import transport from './transport.js';
+import transports from './transports.js';
 
-export default scaffold(transport)(structure, 'https://127.0.0.1:8080/');
+export default scaffold(endpoints, transports);

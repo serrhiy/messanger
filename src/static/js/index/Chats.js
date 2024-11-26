@@ -9,7 +9,6 @@ class Chats extends Array {
 
   draw() {
     this.sort((a, b) => b.data.createdAt - a.data.createdAt);
-    for (const chat of this) console.log(chat.data);
     chatList.innerHTML = '';
     for (const chat of this) chat.generate();
   }

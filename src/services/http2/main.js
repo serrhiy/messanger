@@ -1,7 +1,7 @@
 'use strict';
 
 const http2 = require('node:http2');
-const getCookie = require('./getCookie.js');
+const getCookie = require('../getCookie.js');
 const prepareUrl = require('../prepareUrl.js');
 
 const isDataValid = (data, structure) => {

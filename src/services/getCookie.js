@@ -1,6 +1,6 @@
 'use strict';
 
-const parseCookie = require('../parseCookie.js');
+const parseCookie = require('./parseCookie.js');
 
 const MAX_AGE = 30 * 24 * 60 * 60;
 const DEFAULT_COOKIE = `Max-Age=${MAX_AGE}; Path=/; Secure; HttpOnly`;

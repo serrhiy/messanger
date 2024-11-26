@@ -9,6 +9,7 @@ const loadEnv = require('./loadEnv.js');
 const mapValues = require('./mapValues.js');
 const apiServer = require('./services/http2');
 const checkToken = require('./checkToken.js');
+const wsServer = require('./services/websocket');
 const staticServer = require('./services/static');
 const resolvePaths = require('./resolvePaths.js');
 const buildStaticUrls = require('./buildStaticUrls.js');
@@ -35,12 +36,14 @@ const sandbox = {
 
 const main = async () => {
   const options = await tlsOptions(keypath, certpath);
-  const { port, apiport } = await loadEnv(envpath);
+  const { port, apiport, wsport } = await loadEnv(envpath);
   const paths = await resolvePaths(apipath);
   const staticUrls = buildStaticUrls(paths, ['.js']);
   const controllers = await mapValues(staticUrls, load(sandbox));
+  const validator = checkToken(db);
   staticServer(options, port, staticpath, proxy);
-  apiServer(options, apiport, controllers, checkToken(db));
+  apiServer(options, apiport, controllers, validator);
+  wsServer(options, wsport, controllers, validator);
 };
 
 main();
