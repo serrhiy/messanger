@@ -36,7 +36,7 @@ export default class Dialog {
   #usersMessages = [];
   #messages = null;
 
-  constructor(username, usersMessages) {
+  constructor(username, usersMessages = []) {
     const messages = buildMessages();
     for (const { message, time, myMessage } of usersMessages) {
       const generated = buildMessage(message, time, myMessage);

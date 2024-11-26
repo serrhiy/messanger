@@ -24,20 +24,20 @@ const queryByString = (fields, limit = 10) => {
     structure: {
       username: {
         mandatory: true,
-        validators: [isString, (str) => str.length >= 3]
+        validators: [isString, (str) => str.length >= 3],
       },
       firstName: {
         mandatory: true,
-        validators: [isString, (str) => str.length >= 2]
+        validators: [isString, (str) => str.length >= 2],
       },
       secondName: {
         mandatory: true,
-        validators: [isString, (str) => str.length >= 2]
+        validators: [isString, (str) => str.length >= 2],
       },
       password: {
         mandatory: true,
-        validators: [isString, (str) => str.length >= 4]
-      }
+        validators: [isString, (str) => str.length >= 4],
+      },
     },
     controller: async (body, cookie) => {
       const { username, password } = body;
@@ -62,13 +62,13 @@ const queryByString = (fields, limit = 10) => {
       },
       password: {
         mandatory: true,
-        validators: [isString, (str) => str.length >= 4]
-      }
+        validators: [isString, (str) => str.length >= 4],
+      },
     },
-    controller: async ({ username, password }, cookie) => {      
+    controller: async ({ username, password }, cookie) => {
       const persons = await users.read(['password', 'token'], { username });
       if (persons.length === 0) {
-        return { success: false, message: 'User doesn\'t exist' };
+        return { success: false, message: "User doesn't exist" };
       }
       const user = persons[0];
       const valid = await common.validatePassword(password, user.password);
@@ -95,7 +95,7 @@ const queryByString = (fields, limit = 10) => {
       }
       const selectors = { username, firstName, secondName };
       const { condition, values } = queryByString(selectors);
-      const fieldsStr  = fields.map((field) => `"${field}"`).join(',');
+      const fieldsStr = fields.map((field) => `"${field}"`).join(',');
       const sql = `select ${fieldsStr} from "users" where ` + condition;
       const persons = await users.query(sql, values);
       return { success: true, data: persons };
@@ -109,8 +109,8 @@ const queryByString = (fields, limit = 10) => {
       const fields = ['id', 'username', 'firstName', 'secondName'];
       const token = cookie.get('token');
       const user = await users.read(fields, { token });
-      
+
       return { success: true, data: user[0] };
-    }
-  }
+    },
+  },
 });

@@ -1,6 +1,6 @@
 'use strict';
 
-const db =  require('./db.js');
+const db = require('./db.js');
 const load = require('./load.js');
 const path = require('node:path');
 const proxy = require('./proxy.js');

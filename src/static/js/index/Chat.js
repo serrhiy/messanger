@@ -1,6 +1,7 @@
 'use strict';
 
 import Dialog from './Dialog.js';
+import chats from './Chats.js';
 
 const chatList = document.getElementsByClassName('chat-list').item(0);
 
@@ -61,6 +62,7 @@ const buildChat = (user, avatar, text = '', date = '', unreadMessages = 0) => {
 
 export default class Chat extends EventTarget {
   #chat = null;
+  #dialog = null;
   data = null;
 
   constructor(data) {
@@ -70,72 +72,51 @@ export default class Chat extends EventTarget {
     chat.html.addEventListener('click', () => {
       this.dispatchEvent(new CustomEvent('click'));
     });
-    this.#chat = chat;
     this.data = { ...data, createdAt: new Date(createdAt) };
+    const dialog = new Dialog(name, []);
+    chat.html.addEventListener('click', () => {
+      const active = chats.find((chat) => chat.isActive());
+      if (active) active.makeUnactive();
+      this.makeActive();
+      buttom.innerHTML = '';
+      top.innerHTML = '';
+      dialog.generate();
+      if (this.data.unreadMessages > 0) {
+        this.data.unreadMessages = 0;
+        chat.unreadMessages(0);
+        dialog.scroll();
+      }
+    });
+    dialog.onMessage((message) => {
+      this.dispatchEvent(new CustomEvent(message, { detail: message }));
+      chat.message(message);
+    });
+    this.#dialog = dialog;
+    this.#chat = chat;
   }
 
-  html() {
-    return this.#chat.html;
+  generate() {
+    chatList.appendChild(this.#chat.html);
+  }
+
+  addMessage(message) {
+    if (!this.isActive()) {
+      const count = ++this.data.unreadMessages;
+      this.#chat.unreadMessages(count);
+    }
+    this.#dialog.addMessage(message, false);
+    this.#chat.message(message);
+  }
+
+  isActive() {
+    return this.#chat.html.classList.contains('active');
+  }
+
+  makeUnactive() {
+    this.#chat.html.classList.remove('active');
+  }
+
+  makeActive() {
+    this.#chat.html.classList.add('active');
   }
 }
-
-// export default class Chat {
-//   #dialog = null;
-//   #chat = null;
-//   #info = null;
-//   #onMessage = null;
-
-//   constructor(data) {
-//     const {
-//       user: { username, avatar },
-//       messages,
-//       unreadMessages,
-//     } = data;
-//     const { message, time } = messages[0];
-//     const chat = buildChat(username, avatar, message, time, unreadMessages);
-//     const dialog = new Dialog(username, messages);
-//     chat.html.addEventListener('click', () => {
-//       const active = document.getElementsByClassName('chat active').item(0);
-//       if (active) active.classList.remove('active');
-//       chat.html.classList.add('active');
-//       buttom.innerHTML = '';
-//       top.innerHTML = '';
-//       dialog.generate();
-//       if (this.#info.unreadMessages > 0) {
-//         this.#info.unreadMessages = 0;
-//         chat.unreadMessages(0);
-//         dialog.scroll();
-//       }
-//     });
-//     dialog.onMessage((message) => {
-//       this.#onMessage?.(message);
-//       chat.message(message);
-//     });
-//     this.#info = { username, avatar, message, time, unreadMessages };
-//     this.#dialog = dialog;
-//     this.#chat = chat;
-//   }
-
-//   generate() {
-//     chatList.appendChild(this.#chat.html);
-//   }
-
-//   addMessage(message) {
-//     if (!this.isActive()) {
-//       const count = ++this.#info.unreadMessages;
-//       this.#chat.unreadMessages(count);
-//     }
-//     this.#dialog.addMessage(message, false);
-//     this.#chat.message(message);
-//   }
-
-//   isActive() {
-//     const active = document.getElementsByClassName('chat active').item(0);
-//     return active === this.#chat.html;
-//   }
-
-//   onMessage(listener) {
-//     this.#onMessage = listener;
-//     return this;
-//   }
-// }

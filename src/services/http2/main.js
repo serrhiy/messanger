@@ -54,12 +54,13 @@ module.exports = async (options, port, controllers, validator) => {
     const services = controllers.get(url);
     const body = await parseBody(stream);
     const validStructure = body !== null && body.service in services;
-    if (!validStructure) {      
+    if (!validStructure) {
       stream.respond(defaultHeaders({ ':status': 400 }, origin));
       const answer = { success: false, message: 'Invalid body' };
       return void stream.end(JSON.stringify(answer));
     }
-    const { controller, structure, needToken } = services[body.service];
+    const serivce = services[body.service];
+    const { controller, structure, needToken } = serivce;
     if (!isDataValid(body.data, structure)) {
       stream.respond(defaultHeaders({ ':status': 400 }, origin));
       const answer = { success: false, message: 'Invalid structure' };
@@ -73,7 +74,7 @@ module.exports = async (options, port, controllers, validator) => {
       const answer = { success: false, message: 'Invalid token' };
       return void stream.end(JSON.stringify(answer));
     }
-    const answer = await controller(body.data, cookie);
+    const answer = await controller.call(serivce, body.data, cookie);
     const responseHeaders = { 'set-cookie': cookies, ':status': 200 };
     stream.respond(defaultHeaders(responseHeaders, origin));
     stream.end(JSON.stringify(answer));

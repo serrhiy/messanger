@@ -15,19 +15,26 @@ const onSerach = (me) => async () => {
   const options = { username: value, firstName: value, secondName: value };
   const users = await api.users.read(options);
   for (const user of users) {
-    const hasChat = chats.findIndex((chat) => (
-      chat.data.isDialog && chat.data.user.id === user.id
-    ));
+    const hasChat = chats.findIndex(
+      (chat) => chat.data.isDialog && chat.data.user.id === user.id,
+    );
     if (user.id === me.id || hasChat !== -1) continue;
     const { firstName, secondName, avatar } = user;
-    const name = `${firstName} ${secondName}`;
+    const name = firstName + ' ' + secondName;
     const chat = new Chat({ name, avatar });
-    chatList.appendChild(chat.html());
     chat.addEventListener('click', async () => {
       const data = { users: [me.id, user.id] };
       const response = await api.chats.create(data);
-    });
-  };
+      const { createdAt: created, id: chatId, isDialog } = response;
+      const createdAt = new Date(created);
+      const options = { name, chatId, avatar, createdAt, isDialog, user };
+      chat.data = options;
+      chats.push(chat);
+      chats.draw();
+      searchInput.value = '';
+    }, { once: true });
+    chat.generate();
+  }
 };
 
 const main = async () => {
@@ -38,10 +45,11 @@ const main = async () => {
     const { id: chatId, isDialog, createdAt } = rawChat;
     if (!isDialog) continue;
     const participants = await api.chats.participants({ id: chatId });
-    const [participant] = participants.filter((user) => user.id !== me.id);
-    const { firstName, secondName, avatar, username, id } = participant;
+    const [user] = participants.filter((user) => user.id !== me.id);
+    const { firstName, secondName, avatar } = user;
     const name = firstName + ' ' + secondName;
-    const chat = new Chat({ name, avatar, createdAt, chatId, isDialog, user: participant });
+    const data = { name, avatar, createdAt, chatId, isDialog, user };
+    const chat = new Chat(data);
     chats.push(chat);
   }
   chats.draw();
