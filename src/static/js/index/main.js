@@ -11,11 +11,14 @@ const chatList = document.getElementById('chat-list');
 const onSerach = (me) => async () => {
   const { value } = searchInput;
   chatList.innerHTML = '';
-  if (value.length === 0) return;
+  if (value.length === 0) return void chats.draw();
   const options = { username: value, firstName: value, secondName: value };
   const users = await api.users.read(options);
   for (const user of users) {
-    if (user.id === me.id) continue;
+    const hasChat = chats.findIndex((chat) => (
+      chat.data.isDialog && chat.data.user.id === user.id
+    ));
+    if (user.id === me.id || hasChat !== -1) continue;
     const { firstName, secondName, avatar } = user;
     const name = `${firstName} ${secondName}`;
     const chat = new Chat({ name, avatar });
@@ -30,9 +33,18 @@ const onSerach = (me) => async () => {
 const main = async () => {
   setResizing();
   const me = await api.users.me();
-  const rawChats = await api.chats.read({ userId: me.id })
-  console.log({ rawChats });
-  
+  const rawChats = await api.chats.read({ userId: me.id });
+  for (const rawChat of rawChats) {
+    const { id: chatId, isDialog, createdAt } = rawChat;
+    if (!isDialog) continue;
+    const participants = await api.chats.participants({ id: chatId });
+    const [participant] = participants.filter((user) => user.id !== me.id);
+    const { firstName, secondName, avatar, username, id } = participant;
+    const name = firstName + ' ' + secondName;
+    const chat = new Chat({ name, avatar, createdAt, chatId, isDialog, user: participant });
+    chats.push(chat);
+  }
+  chats.draw();
   searchInput.addEventListener('input', onSerach(me));
 };
 

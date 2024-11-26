@@ -40,10 +40,25 @@ const isNumber = (value) => !Number.isNaN(Number.parseInt(value));
       userId: { mandatory: true, validators: [isNumber] },
     },
     controller: async ({ userId }) => {
-      const fields = ['id', 'name', 'avatar', 'isDialog', 'createdAt'].map((field) => `"${field}"`).join(',');
+      const fields = ['id', 'name', 'avatar', 'isDialog', 'createdAt']
+        .map((field) => `"${field}"`).join(',');
       const sql = `select ${fields} from "usersChats" join "chats" on "chatId" = "id" where "userId" = $1`;
       const data = await chats.query(sql, [userId]);
-      return { success: true, data };
+      return { success: true, data }
     },
   },
+
+  participants: {
+    needToken: true,
+    structure: {
+      id: { mandatory: true, validators: [isNumber] },
+    },
+    controller: async ({ id }) => {
+      const fields = ['id', 'username', 'firstName', 'secondName', 'avatar']
+        .map((field) => `"${field}"`).join(',');
+      const sql = `select ${fields} from "usersChats" join "users" on "userId" = id where "chatId" = $1`;
+      const data = await chats.query(sql, [id]);
+      return { success: true, data };
+    },
+  }
 });

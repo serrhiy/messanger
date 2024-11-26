@@ -2,5 +2,5 @@
 
 export default {
   users: ['create', 'login', 'read', 'me'],
-  chats: ['create', 'read'],
+  chats: ['create', 'read', 'participants'],
 };

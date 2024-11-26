@@ -2,6 +2,8 @@ const users = db('users');
 
 const isString = (value) => typeof value === 'string';
 
+const isNumber = (value) => !Number.isNaN(Number.parseInt(value));
+
 const queryByString = (fields, limit = 10) => {
   const tokens = [];
   const values = [];
@@ -82,15 +84,19 @@ const queryByString = (fields, limit = 10) => {
       username: { mandatory: false, validators: [isString] },
       firstName: { mandatory: false, validators: [isString] },
       secondName: { mandatory: false, validators: [isString] },
-      id: { mandatory: false, validators: [Number.isInteger] },
+      id: { mandatory: false, validators: [isNumber] },
     },
     controller: async (body) => {
-      const { username, firstName, secondName } = body;
-      const fields = { username, firstName, secondName };
-      const { condition, values } = queryByString(fields);
-      const sql =
-        `select "id", "username", "firstName", "secondName", "avatar" from users where ` +
-        condition;
+      const fields = ['id', 'username', 'firstName', 'secondName', 'avatar'];
+      const { username, firstName, secondName, id } = body;
+      if (id) {
+        const user = await users.read(fields, { id });
+        return { success: true, data: user };
+      }
+      const selectors = { username, firstName, secondName };
+      const { condition, values } = queryByString(selectors);
+      const fieldsStr  = fields.map((field) => `"${field}"`).join(',');
+      const sql = `select ${fieldsStr} from "users" where ` + condition;
       const persons = await users.query(sql, values);
       return { success: true, data: persons };
     },

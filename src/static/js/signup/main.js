@@ -20,6 +20,6 @@ form.addEventListener('submit', async (event) => {
     password: password1.value,
   };
   for (const input of inputs) input.value = '';
-  const answer = await api.users.create(data);
-  if (answer.success) location.reload();
+  await api.users.create(data);
+  location.reload();
 });
