@@ -55,7 +55,14 @@ const users = db('users');
     structure: {
       id: { mandatory: true, validators: [isNumber] },
     },
-    fields: ['id', 'username', 'firstName', 'secondName', 'avatar']
+    fields: [
+      'id',
+      'username',
+      'firstName',
+      'secondName',
+      'avatar',
+      'lastOnline',
+    ]
       .map((field) => `"${field}"`)
       .join(','),
     async controller({ id }) {

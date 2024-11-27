@@ -31,8 +31,8 @@ const buildHeader = (name, shortInfo) => {
 export default class DialogHeader {
   #header = null;
 
-  constructor(username) {
-    this.#header = buildHeader(username, 'last seen recently');
+  constructor(username, lastOnline = 'last seen recently') {
+    this.#header = buildHeader(username, lastOnline);
   }
 
   generate() {

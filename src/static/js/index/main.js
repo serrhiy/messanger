@@ -36,19 +36,23 @@ const onSerach = (me) => async () => {
     const { firstName, secondName, avatar } = user;
     const name = firstName + ' ' + secondName;
     const chat = new Chat({ name, avatar }, me);
-    chat.addEventListener('click', async () => {
-      const data = { users: [me.id, user.id] };
-      const response = await api.chats.create(data);
-      const { createdAt: created, id: chatId, isDialog } = response;
-      const createdAt = new Date(created);
-      const options = { name, chatId, avatar, createdAt, isDialog, user };
-      chat.data = options;
-      chat.addEventListener('message', onMessage(me));
-      chat.addEventListener('click', onChatClick);
-      chats.push(chat);
-      chats.draw();
-      searchInput.value = '';
-    }, { once: true });
+    chat.addEventListener(
+      'click',
+      async () => {
+        const data = { users: [me.id, user.id] };
+        const response = await api.chats.create(data);
+        const { createdAt: created, id: chatId, isDialog } = response;
+        const createdAt = new Date(created);
+        const options = { name, chatId, avatar, createdAt, isDialog, user };
+        chat.data = options;
+        chat.addEventListener('message', onMessage(me));
+        chat.addEventListener('click', onChatClick);
+        chats.push(chat);
+        chats.draw();
+        searchInput.value = '';
+      },
+      { once: true },
+    );
     chat.generate();
   }
 };
@@ -63,8 +67,9 @@ const main = async () => {
     if (chat.isActive()) {
       await api.chats.updateOnline({ chatId });
     }
-  })
+  });
   const me = await api.users.me();
+  await api.users.updateOnline();
   const rawChats = await api.chats.read({ userId: me.id });
   for (const rawChat of rawChats) {
     const { id: chatId, isDialog, lastTimeInChat } = rawChat;
@@ -77,7 +82,7 @@ const main = async () => {
     if (!isDialog) continue;
     const participants = await api.chats.participants({ id: chatId });
     const [user] = participants.filter((user) => user.id !== me.id);
-    const { firstName, secondName, avatar } = user;
+    const { firstName, secondName, avatar, lastOnline } = user;
     const name = firstName + ' ' + secondName;
     const data = {
       name,
@@ -87,7 +92,8 @@ const main = async () => {
       chatId,
       isDialog,
       user,
-      lastTimeInChat
+      lastTimeInChat,
+      lastOnline,
     };
     const chat = new Chat(data, me);
     chat.addEventListener('message', onMessage(me));

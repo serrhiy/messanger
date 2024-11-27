@@ -82,16 +82,23 @@ const queryByString = (fields, limit = 10) => {
       secondName: { mandatory: false, validators: [isString] },
       id: { mandatory: false, validators: [isNumber] },
     },
-    controller: async (body) => {
-      const fields = ['id', 'username', 'firstName', 'secondName', 'avatar'];
+    fields: [
+      'id',
+      'username',
+      'firstName',
+      'secondName',
+      'avatar',
+      'lastOnline',
+    ],
+    async controller(body) {
       const { username, firstName, secondName, id } = body;
       if (id) {
-        const user = await users.read(fields, { id });
+        const user = await users.read(this.fields, { id });
         return { success: true, data: user };
       }
       const selectors = { username, firstName, secondName };
       const { condition, values } = queryByString(selectors);
-      const fieldsStr = fields.map((field) => `"${field}"`).join(',');
+      const fieldsStr = this.fields.map((field) => `"${field}"`).join(',');
       const sql = `select ${fieldsStr} from "users" where ` + condition;
       const persons = await users.query(sql, values);
       return { success: true, data: persons };
@@ -121,6 +128,6 @@ const queryByString = (fields, limit = 10) => {
       `;
       await users.query(sql, [token]);
       return { success: true };
-    }
-  }
+    },
+  },
 });

@@ -31,7 +31,7 @@ export default class Dialog {
   #usersMessages = [];
   #messages = null;
 
-  constructor(username, usersMessages, me) {
+  constructor(username, lastOnline, usersMessages, me) {
     const messages = buildMessages();
     for (const { message, createdAt, userId } of usersMessages) {
       const myMessage = userId === me.id;
@@ -44,7 +44,8 @@ export default class Dialog {
       this.addMessage(message, true);
       this.#onMessage?.(message);
     });
-    this.#header = new DialogHeader(username);
+    const time = transformDate(new Date(lastOnline));
+    this.#header = new DialogHeader(username, 'was online at ' + time);
     this.#messages = messages;
   }
 

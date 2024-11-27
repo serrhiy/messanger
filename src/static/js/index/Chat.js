@@ -84,16 +84,16 @@ export default class Chat extends EventTarget {
 
   constructor(data, me) {
     super();
-    const { name, avatar, lastTimeInChat, messages = [] } = data;
+    const { lastOnline, name, avatar, lastTimeInChat, messages = [] } = data;
     this.lastActivity = new Date(lastTimeInChat);
     const unreadMessages = countUnreadMessages(lastTimeInChat, messages);
     const lastMessage = messages[messages.length - 1];
     const message = lastMessage ? lastMessage.message : '';
     const time = lastMessage ? transformDate(lastMessage.createdAt) : '';
     const chat = buildChat(name, avatar, message, time, unreadMessages);
-    this.data = structuredClone( data);
+    this.data = structuredClone(data);
     this.initial = Object.freeze(structuredClone(data));
-    const dialog = new Dialog(name, messages, me);
+    const dialog = new Dialog(name, lastOnline, messages, me);
     this.#unreadMessages = unreadMessages;
     chat.html.addEventListener('click', () => {
       this.lastActivity = new Date();
