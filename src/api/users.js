@@ -14,6 +14,12 @@ const queryByString = (fields, limit = 10) => {
   return { condition, values };
 };
 
+const random = (min, max) => {
+  const minCeiled = Math.ceil(min);
+  const maxFloored = Math.floor(max);
+  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
+}
+
 ({
   create: {
     needToken: false,
@@ -35,7 +41,13 @@ const queryByString = (fields, limit = 10) => {
         validators: [isString, (str) => str.length >= 4],
       },
     },
-    controller: async (body, cookie) => {
+    avatars: [
+      'images/avatars/avatar1.jpg',
+      'images/avatars/avatar2.jpg',
+      'images/avatars/avatar3.jpg',
+    ],
+    async controller(body, cookie) {
+      const avatar = this.avatars[random(0, this.avatars.length)];
       const { username, password } = body;
       const exists = await users.exists({ username });
       if (exists) {
@@ -43,7 +55,7 @@ const queryByString = (fields, limit = 10) => {
       }
       const hashed = await common.hashPassword(password);
       const token = common.generateToken();
-      await users.create({ ...body, password: hashed, token });
+      await users.create({ ...body, password: hashed, token , avatar });
       cookie.set('token', token);
       return { success: true };
     },
