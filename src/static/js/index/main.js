@@ -31,19 +31,17 @@ const onSerach = (me) => async () => {
     const name = firstName + ' ' + secondName;
     const chat = new Chat({ name, avatar }, me);
     chat.addEventListener('click', async () => {
-        const data = { users: [me.id, user.id] };
-        const response = await api.chats.create(data);
-        const { createdAt: created, id: chatId, isDialog } = response;
-        const createdAt = new Date(created);
-        const options = { name, chatId, avatar, createdAt, isDialog, user };
-        chat.data = options;
-        chat.addEventListener('message', onMessage(me));
-        chats.push(chat);
-        chats.draw();
-        searchInput.value = '';
-      },
-      { once: true },
-    );
+      const data = { users: [me.id, user.id] };
+      const response = await api.chats.create(data);
+      const { createdAt: created, id: chatId, isDialog } = response;
+      const createdAt = new Date(created);
+      const options = { name, chatId, avatar, createdAt, isDialog, user };
+      chat.data = options;
+      chat.addEventListener('message', onMessage(me));
+      chats.push(chat);
+      chats.draw();
+      searchInput.value = '';
+    }, { once: true });
     chat.generate();
   }
 };

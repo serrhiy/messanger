@@ -11,6 +11,9 @@ module.exports = (options, port, events, validator) => {
   ws.on('connection', async (connection, headers) => {
     const { token } = parseCookie(headers.cookie);
     connections.set(token, connection);
+    connection.on('disconnect', () => {
+      connections.delete(token);
+    });
   });
   events.on('message', (message, users, chatId, userId) => {
     for (const user of users) {

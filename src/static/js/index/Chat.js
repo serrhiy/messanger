@@ -77,6 +77,7 @@ export default class Chat extends EventTarget {
       chat = buildChat(name, avatar);
     }
     this.data = structuredClone(data);
+    this.data.unreadMessages = 0; // to do
     const dialog = new Dialog(name, messages, me);
     chat.html.addEventListener('click', () => {
       this.dispatchEvent(new CustomEvent('click'));
