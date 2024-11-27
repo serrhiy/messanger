@@ -37,10 +37,13 @@ const onSerach = (me) => async () => {
   }
 };
 
-const onMessage = (event) => {
+const onMessage = (me) => async (event) => {
   const { detail: message, target: chat } = event;
-  console.log({ message, chat });
-  
+  const { chatId } = chat.data;
+  const { id: userId } = me;
+  const data = { message, chatId, userId };
+  const { id } = await api.messages.create(data);
+  console.log({ messageId: id, chatId, userId });
 };
 
 const main = async () => {
@@ -56,7 +59,7 @@ const main = async () => {
     const name = firstName + ' ' + secondName;
     const data = { name, avatar, createdAt, chatId, isDialog, user };
     const chat = new Chat(data);
-    chat.addEventListener('message', onMessage);
+    chat.addEventListener('message', onMessage(me));
     chats.push(chat);
   }
   chats.draw();

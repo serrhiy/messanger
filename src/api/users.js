@@ -1,9 +1,5 @@
 const users = db('users');
 
-const isString = (value) => typeof value === 'string';
-
-const isNumber = (value) => !Number.isNaN(Number.parseInt(value));
-
 const queryByString = (fields, limit = 10) => {
   const tokens = [];
   const values = [];
@@ -109,7 +105,6 @@ const queryByString = (fields, limit = 10) => {
       const fields = ['id', 'username', 'firstName', 'secondName'];
       const token = cookie.get('token');
       const user = await users.read(fields, { token });
-
       return { success: true, data: user[0] };
     },
   },

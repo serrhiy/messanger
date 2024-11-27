@@ -28,6 +28,8 @@ const tlsOptions = async (keypath, certpath) => ({
 const sandbox = {
   db,
   console,
+  isString: (value) => typeof value === 'string',
+  isNumber: (value) => !Number.isNaN(Number.parseInt(value)),
   common: {
     ...require('./hash.js'),
     generateToken: require('./generateToken.js'),

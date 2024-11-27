@@ -1,10 +1,6 @@
 const chats = db('chats');
 const usersChats = db('usersChats');
 
-const isString = (value) => typeof value === 'string';
-
-const isNumber = (value) => !Number.isNaN(Number.parseInt(value));
-
 ({
   create: {
     needToken: true,
