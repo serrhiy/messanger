@@ -14,8 +14,6 @@ form.addEventListener('submit', async (event) => {
   };
   username.value = '';
   password.value = '';
-  console.log({ data });
-  const answer = await api.users.login(data);
-  console.log({ answer });
-  if (answer.success) location.reload();
+  await api.users.login(data);
+  location.reload();
 });

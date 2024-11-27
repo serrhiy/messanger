@@ -30,9 +30,7 @@ const onSerach = (me) => async () => {
     const { firstName, secondName, avatar } = user;
     const name = firstName + ' ' + secondName;
     const chat = new Chat({ name, avatar }, me);
-    chat.addEventListener(
-      'click',
-      async () => {
+    chat.addEventListener('click', async () => {
         const data = { users: [me.id, user.id] };
         const response = await api.chats.create(data);
         const { createdAt: created, id: chatId, isDialog } = response;
@@ -52,6 +50,12 @@ const onSerach = (me) => async () => {
 
 const main = async () => {
   setResizing();
+  const ws = new WebSocket('https://127.0.0.1:8088/');
+  ws.addEventListener('message', (event) => {
+    const { message, chatId } = JSON.parse(event.data);
+    const chat = chats.find((chat) => chat.data.chatId === chatId);
+    chat.addMessage(message);
+  })
   const me = await api.users.me();
   const rawChats = await api.chats.read({ userId: me.id });
   for (const rawChat of rawChats) {

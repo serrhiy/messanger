@@ -9,6 +9,7 @@ const loadEnv = require('./loadEnv.js');
 const mapValues = require('./mapValues.js');
 const apiServer = require('./services/http2');
 const checkToken = require('./checkToken.js');
+const { EventEmitter } = require('node:events');
 const wsServer = require('./services/websocket');
 const staticServer = require('./services/static');
 const resolvePaths = require('./resolvePaths.js');
@@ -25,8 +26,11 @@ const tlsOptions = async (keypath, certpath) => ({
   cert: await fsp.readFile(certpath),
 });
 
+const events = new EventEmitter();
+
 const sandbox = {
   db,
+  events,
   console,
   isString: (value) => typeof value === 'string',
   isNumber: (value) => !Number.isNaN(Number.parseInt(value)),
@@ -45,7 +49,7 @@ const main = async () => {
   const validator = checkToken(db);
   staticServer(options, port, staticpath, proxy);
   apiServer(options, apiport, controllers, validator);
-  wsServer(options, wsport, controllers, validator);
+  wsServer(options, wsport, events, validator);
 };
 
 main();

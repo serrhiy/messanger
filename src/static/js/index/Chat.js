@@ -68,8 +68,6 @@ export default class Chat extends EventTarget {
 
   constructor(data, me) {
     super();
-    console.log({ data });
-
     const { name, avatar, messages = [] } = data;
     let chat = null;
     if (messages.length > 0) {
@@ -78,22 +76,20 @@ export default class Chat extends EventTarget {
     } else {
       chat = buildChat(name, avatar);
     }
-    chat.html.addEventListener('click', () => {
-      this.dispatchEvent(new CustomEvent('click'));
-    });
     this.data = structuredClone(data);
     const dialog = new Dialog(name, messages, me);
     chat.html.addEventListener('click', () => {
+      this.dispatchEvent(new CustomEvent('click'));
       const active = chats.find((chat) => chat.isActive());
       if (active) active.makeUnactive();
       this.makeActive();
       buttom.innerHTML = '';
       top.innerHTML = '';
       dialog.generate();
+      dialog.scroll();
       if (this.data.unreadMessages > 0) {
         this.data.unreadMessages = 0;
         chat.unreadMessages(0);
-        dialog.scroll();
       }
     });
     dialog.onMessage((message) => {

@@ -13,6 +13,13 @@ const messages = db('messages');
     },
     controller: async ({ userId, chatId, message }) => {
       const { id } = await messages.create({ userId, chatId, message });
+      const sql = `
+        select users.token from "usersChats" 
+        join users on "userId"=id 
+        where "chatId"=$1 and "userId"!=$2
+      `;
+      const participants = await messages.query(sql, [chatId, userId]);
+      events.emit('message', message, participants, chatId, userId);
       return { success: true, data: { id, userId, chatId, message } };
     },
   },
