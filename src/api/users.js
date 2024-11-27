@@ -101,11 +101,26 @@ const queryByString = (fields, limit = 10) => {
   me: {
     needToken: true,
     structure: {},
-    controller: async (body, cookie) => {
-      const fields = ['id', 'username', 'firstName', 'secondName'];
+    fields: ['id', 'username', 'firstName', 'secondName', 'lastOnline'],
+    async controller(body, cookie) {
       const token = cookie.get('token');
-      const user = await users.read(fields, { token });
-      return { success: true, data: user[0] };
+      const [user] = await users.read(this.fields, { token });
+      return { success: true, data: user };
     },
   },
+
+  updateOnline: {
+    needToken: true,
+    structure: {},
+    controller: async (body, cookie) => {
+      const token = cookie.get('token');
+      const sql = `
+        update users 
+        set "lastOnline" = current_timestamp 
+        where token = $1
+      `;
+      await users.query(sql, [token]);
+      return { success: true };
+    }
+  }
 });

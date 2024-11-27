@@ -61,25 +61,42 @@ const buildChat = (user, avatar, text = '', date = '', unreadMessages = 0) => {
   };
 };
 
+const countUnreadMessages = (lastOnline, messages) => {
+  if (!lastOnline) return messages.length;
+  let unreadMessages = 0;
+  const date = new Date(lastOnline);
+  const { length } = messages;
+  for (let index = length - 1; index >= 0; index--) {
+    const { createdAt } = messages[index];
+    if (createdAt - date < 0) break;
+    unreadMessages++;
+  }
+  return unreadMessages;
+};
+
 export default class Chat extends EventTarget {
   #chat = null;
   #dialog = null;
+  #unreadMessages = 0;
+  lastActivity = null;
+  initial = null;
   data = null;
 
   constructor(data, me) {
     super();
-    const { name, avatar, messages = [] } = data;
-    let chat = null;
-    if (messages.length > 0) {
-      const { createdAt, message } = messages.at(-1);
-      chat = buildChat(name, avatar, message, transformDate(createdAt));
-    } else {
-      chat = buildChat(name, avatar);
-    }
-    this.data = structuredClone(data);
-    this.data.unreadMessages = 0; // to do
+    const { name, avatar, lastTimeInChat, messages = [] } = data;
+    this.lastActivity = new Date(lastTimeInChat);
+    const unreadMessages = countUnreadMessages(lastTimeInChat, messages);
+    const lastMessage = messages[messages.length - 1];
+    const message = lastMessage ? lastMessage.message : '';
+    const time = lastMessage ? transformDate(lastMessage.createdAt) : '';
+    const chat = buildChat(name, avatar, message, time, unreadMessages);
+    this.data = structuredClone( data);
+    this.initial = Object.freeze(structuredClone(data));
     const dialog = new Dialog(name, messages, me);
+    this.#unreadMessages = unreadMessages;
     chat.html.addEventListener('click', () => {
+      this.lastActivity = new Date();
       this.dispatchEvent(new CustomEvent('click'));
       const active = chats.find((chat) => chat.isActive());
       if (active) active.makeUnactive();
@@ -88,12 +105,13 @@ export default class Chat extends EventTarget {
       top.innerHTML = '';
       dialog.generate();
       dialog.scroll();
-      if (this.data.unreadMessages > 0) {
-        this.data.unreadMessages = 0;
+      if (this.#unreadMessages > 0) {
+        this.#unreadMessages = 0;
         chat.unreadMessages(0);
       }
     });
     dialog.onMessage((message) => {
+      this.lastActivity = new Date();
       const event = new CustomEvent('message', { detail: message });
       this.dispatchEvent(event);
       chat.message(message);
@@ -109,7 +127,7 @@ export default class Chat extends EventTarget {
 
   addMessage(message) {
     if (!this.isActive()) {
-      const count = ++this.data.unreadMessages;
+      const count = ++this.#unreadMessages;
       this.#chat.unreadMessages(count);
     }
     this.#dialog.addMessage(message, false);

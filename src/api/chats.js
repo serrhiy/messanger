@@ -1,5 +1,6 @@
 const chats = db('chats');
 const usersChats = db('usersChats');
+const users = db('users');
 
 ({
   create: {
@@ -35,13 +36,13 @@ const usersChats = db('usersChats');
     structure: {
       userId: { mandatory: true, validators: [isNumber] },
     },
-    fields: ['id', 'name', 'avatar', 'isDialog', 'createdAt']
+    fields: ['id', 'name', 'avatar', 'isDialog', 'createdAt', 'lastTimeInChat']
       .map((field) => `"${field}"`)
       .join(','),
     async controller({ userId }) {
       const sql = `
-        select ${this.fields} from "usersChats" 
-        join "chats" on "chatId" = "id" 
+        select ${this.fields} from "usersChats"
+        join chats on "chatId" = id 
         where "userId" = $1
       `;
       const data = await chats.query(sql, [userId]);
@@ -65,6 +66,25 @@ const usersChats = db('usersChats');
       `;
       const data = await chats.query(sql, [id]);
       return { success: true, data };
+    },
+  },
+
+  updateOnline: {
+    needToken: true,
+    structure: {
+      chatId: { mandatory: true, validators: [isNumber] },
+    },
+    controller: async ({ chatId }, cookie) => {
+      const token = cookie.get('token');
+      const [user] = await users.read(['id'], { token });
+      const { id: userId } = user;
+      const sql = `
+        update "usersChats"
+        set "lastTimeInChat" = current_timestamp
+        where "userId" = $1 and "chatId" = $2
+      `;
+      await users.query(sql, [userId, chatId]);
+      return { success: true };
     },
   },
 });

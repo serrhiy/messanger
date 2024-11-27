@@ -7,7 +7,8 @@ create table "users" (
   "secondName" varchar(64),
   "avatar"     varchar(256),
   "password"   varchar(256),
-  "token"      varchar(36) NOT NULL
+  "token"      varchar(36) NOT NULL,
+  "lastOnline" timestamptz default '-infinity'::timestamptz
 );
 
 alter table "users" add constraint "pkUsers" primary key ("id");
@@ -28,8 +29,9 @@ alter table "chats" add constraint "pkChats" primary key ("id");
 create index "akChatId" on "chats" ("id");
 
 create table "usersChats" (
-  "userId" bigint not null,
-  "chatId" bigint not null
+  "userId"           bigint not null,
+  "chatId"           bigint not null,
+  "lastTimeInChat"   timestamptz default '-infinity'::timestamptz
 );
 
 alter table "usersChats" add constraint "pkUsersChats" primary key ("userId", "chatId");
@@ -37,6 +39,7 @@ alter table "usersChats" add constraint "fkUsersChatsUserId"
   foreign key ("userId") references "users" ("id");
 alter table "usersChats" add constraint "fkUsersChatsChatId" 
   foreign key ("chatId") references "chats" ("id");
+
 
 create table "messages" (
   "id"        bigint generated always as identity,
