@@ -19,6 +19,6 @@ export default (transport) => {
       api[key] = functions;
     }
     return api;
-  }
+  };
   return scaffold;
 };

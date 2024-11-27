@@ -2,6 +2,7 @@
 
 import Dialog from './Dialog.js';
 import chats from './Chats.js';
+import transformDate from './transformDate.js';
 
 const chatList = document.getElementsByClassName('chat-list').item(0);
 
@@ -65,15 +66,23 @@ export default class Chat extends EventTarget {
   #dialog = null;
   data = null;
 
-  constructor(data) {
+  constructor(data, me) {
     super();
-    const { name, avatar, text, date, unreadMessages, createdAt } = data;
-    const chat = buildChat(name, avatar, text, date, unreadMessages);
+    console.log({ data });
+
+    const { name, avatar, messages = [] } = data;
+    let chat = null;
+    if (messages.length > 0) {
+      const { createdAt, message } = messages.at(-1);
+      chat = buildChat(name, avatar, message, transformDate(createdAt));
+    } else {
+      chat = buildChat(name, avatar);
+    }
     chat.html.addEventListener('click', () => {
       this.dispatchEvent(new CustomEvent('click'));
     });
-    this.data = { ...data, createdAt: new Date(createdAt) };
-    const dialog = new Dialog(name, []);
+    this.data = structuredClone(data);
+    const dialog = new Dialog(name, messages, me);
     chat.html.addEventListener('click', () => {
       const active = chats.find((chat) => chat.isActive());
       if (active) active.makeUnactive();
@@ -91,6 +100,7 @@ export default class Chat extends EventTarget {
       const event = new CustomEvent('message', { detail: message });
       this.dispatchEvent(event);
       chat.message(message);
+      chat.time(transformDate());
     });
     this.#dialog = dialog;
     this.#chat = chat;

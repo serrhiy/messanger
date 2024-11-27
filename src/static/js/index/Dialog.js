@@ -2,14 +2,9 @@
 
 import Input from './Input.js';
 import DialogHeader from './DialogHeader.js';
+import transformDate from './transformDate.js';
 
 const buttom = document.querySelector('.dialog .buttom');
-
-const getCurrentTime = () => {
-  const date = new Date();
-  const options = { hour: 'numeric', minute: 'numeric', hour12: true };
-  return date.toLocaleString('en-US', options);
-};
 
 const buildMessages = () => {
   const messages = document.createElement('div');
@@ -36,9 +31,11 @@ export default class Dialog {
   #usersMessages = [];
   #messages = null;
 
-  constructor(username, usersMessages = []) {
+  constructor(username, usersMessages, me) {
     const messages = buildMessages();
-    for (const { message, time, myMessage } of usersMessages) {
+    for (const { message, createdAt, userId } of usersMessages) {
+      const myMessage = userId === me.id;
+      const time = transformDate(new Date(createdAt));
       const generated = buildMessage(message, time, myMessage);
       messages.appendChild(generated);
     }
@@ -66,7 +63,7 @@ export default class Dialog {
     buttom.scrollTop = buttom.scrollHeight;
   }
 
-  addMessage(message, myMessage = true, time = getCurrentTime()) {
+  addMessage(message, myMessage = true, time = transformDate()) {
     const generated = buildMessage(message, time, myMessage);
     this.#messages.appendChild(generated);
     this.#usersMessages.push({ message, time, myMessage });
