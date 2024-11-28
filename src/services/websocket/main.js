@@ -21,7 +21,15 @@ module.exports = (options, port, events, validator) => {
       if (!connections.has(token)) continue;
       const connection = connections.get(token);
       const data = { message, chatId, userId };
-      connection.write(JSON.stringify(data));
+      connection.write(JSON.stringify({ type: 'message', data }));
+    }
+  });
+  events.on('chat', (users, chat) => {
+    for (const user of users) {
+      const { token } = user;
+      if (!connections.has(token)) continue;
+      const connection = connections.get(token);
+      connection.write(JSON.stringify({ type: 'chat', data: chat }));
     }
   });
 };

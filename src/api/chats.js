@@ -20,14 +20,26 @@ const users = db('users');
       },
       avatar: { mandatory: false, validators: [isString] },
     },
-    controller: async ({ name, avatar, users }) => {
-      const isDialog = users.length === 2 ? true : false;
+    controller: async ({ name, avatar, users: persons }, cookie) => {
+      const token = cookie.get('token');
+      const fields = ['id', 'username', 'firstName', 'secondName', 'avatar', 'lastOnline'];
+      const [user] = await users.read(fields, { token });
+      const isDialog = persons.length === 2 ? true : false;
       const { id, createdAt } = await chats.create({ name, avatar, isDialog });
-      const promises = users.map((userId) =>
+      const promises = persons.map((userId) =>
         usersChats.create({ chatId: id, userId }),
       );
       await Promise.all(promises);
-      return { success: true, data: { id, createdAt, name, avatar, isDialog } };
+      const data = { id, createdAt, name, avatar, isDialog };
+      const sql = `
+        select token, username from "usersChats"
+        join users on "userId" = id
+        where "chatId" = $1 and "userId" != $2
+      `;
+      if (isDialog) data.user = user;
+      const participants = await users.query(sql, [id, user.id]);
+      events.emit('chat', participants, data);
+      return { success: true, data };
     },
   },
 

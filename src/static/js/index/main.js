@@ -59,16 +59,30 @@ const onSerach = (me) => async () => {
 
 const main = async () => {
   setResizing();
+  const me = await api.users.me();
   const ws = new WebSocket('https://127.0.0.1:8088/');
   ws.addEventListener('message', async (event) => {
-    const { message, chatId } = JSON.parse(event.data);
-    const chat = chats.find((chat) => chat.data.chatId === chatId);
-    chat.addMessage(message);
-    if (chat.isActive()) {
-      await api.chats.updateOnline({ chatId });
+    const { type, data } = JSON.parse(event.data);
+    if (type === 'message') {
+      const { chatId, message } = data;
+      const chat = chats.find((chat) => chat.data.chatId === chatId);
+      chat.addMessage(message);
+      if (chat.isActive()) {
+        await api.chats.updateOnline({ chatId });
+      }
+    }
+    else if (type === 'chat') {
+      if (!data.isDialog) return;
+      const name = data.user.firstName + ' ' + data.user.secondName;
+      const { avatar } = data.user;
+      const { id: chatId } = data;
+      const chat = new Chat({ ...data, avatar, name, chatId }, me);
+      chat.addEventListener('message', onMessage(me));
+      chat.addEventListener('click', onChatClick);
+      chats.push(chat);
+      chats.draw();
     }
   });
-  const me = await api.users.me();
   await api.users.updateOnline();
   const rawChats = await api.chats.read({ userId: me.id });
   for (const rawChat of rawChats) {
