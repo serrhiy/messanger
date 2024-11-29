@@ -31,7 +31,7 @@ module.exports = (table) => ({
     const values = Object.values(data);
     const numbers = new Array(names.length);
     for (let i = 0; i < names.length; i++) numbers[i] = '$' + (i + 1);
-    const fields = '"' + names.join('","') + '"';
+    const fields = names.map((name) => `"${name}"`).join(',');
     const indices = numbers.join(',');
     const sql = `insert into "${table}" (${fields}) values (${indices}) returning *`;
     const { rows } = await pool.query(sql, values);
@@ -39,7 +39,7 @@ module.exports = (table) => ({
   },
 
   read: async (fields, condition, joiner = 'and') => {
-    const fieldsNames = '"' + fields.join('","') + '"';
+    const fieldsNames = fields.map((field) => `"${field}"`).join(',');
     const conditions = [];
     for (const [index, key] of enumerate(Object.keys(condition), 1)) {
       const expression = `"${key}"=$${index}`;

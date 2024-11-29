@@ -45,6 +45,7 @@ const random = (min, max) => {
       'images/avatars/avatar1.jpg',
       'images/avatars/avatar2.jpg',
       'images/avatars/avatar3.jpg',
+      'images/avatars/avatar4.jpg',
     ],
     async controller(body, cookie) {
       const avatar = this.avatars[random(0, this.avatars.length)];
