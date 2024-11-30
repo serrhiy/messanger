@@ -1,7 +1,3 @@
-const chats = db('chats');
-const usersChats = db('usersChats');
-const users = db('users');
-
 ({
   create: {
     needToken: true,
@@ -20,25 +16,35 @@ const users = db('users');
       },
       avatar: { mandatory: false, validators: [isString] },
     },
-    controller: async ({ name, avatar, users: persons }, cookie) => {
+    fields: [
+      'id',
+      'username',
+      'firstName',
+      'secondName',
+      'avatar',
+      'lastOnline',
+    ],
+    async controller({ name, avatar, users: persons }, cookie) {
       const token = cookie.get('token');
-      const fields = ['id', 'username', 'firstName', 'secondName', 'avatar', 'lastOnline'];
-      const [user] = await users.read(fields, { token });
+      const { fields } = this;
+      const user = await db('users').select(fields).where({ token }).first();
       const isDialog = persons.length === 2 ? true : false;
-      const { id, createdAt } = await chats.create({ name, avatar, isDialog });
+      const [chat] = await db('chats')
+        .insert({ name, avatar, isDialog })
+        .returning(['id', 'createdAt']);
+      const { id, createdAt } = chat;
       const promises = persons.map((userId) =>
-        usersChats.create({ chatId: id, userId }),
+        db('usersChats').insert({ chatId: id, userId }),
       );
       await Promise.all(promises);
       const data = { id, createdAt, name, avatar, isDialog };
-      const sql = `
-        select token, username from "usersChats"
-        join users on "userId" = id
-        where "chatId" = $1 and "userId" != $2
-      `;
+      const users = await db('usersChats')
+        .select(['token', 'username'])
+        .join('users', { userId: 'id' })
+        .where({ chatId: id })
+        .whereNot({ userId: user.id });
       if (isDialog) data.user = user;
-      const participants = await users.query(sql, [id, user.id]);
-      events.emit('chat', participants, data);
+      events.emit('chat', users, data);
       return { success: true, data };
     },
   },
@@ -48,16 +54,12 @@ const users = db('users');
     structure: {
       userId: { mandatory: true, validators: [isNumber] },
     },
-    fields: ['id', 'name', 'avatar', 'isDialog', 'createdAt', 'lastTimeInChat']
-      .map((field) => `"${field}"`)
-      .join(','),
+    fields: ['id', 'name', 'avatar', 'isDialog', 'createdAt', 'lastTimeInChat'],
     async controller({ userId }) {
-      const sql = `
-        select ${this.fields} from "usersChats"
-        join chats on "chatId" = id 
-        where "userId" = $1
-      `;
-      const data = await chats.query(sql, [userId]);
+      const data = await db('usersChats')
+        .select(this.fields)
+        .join('chats', { chatId: 'id' })
+        .where({ userId });
       return { success: true, data };
     },
   },
@@ -74,16 +76,11 @@ const users = db('users');
       'secondName',
       'avatar',
       'lastOnline',
-    ]
-      .map((field) => `"${field}"`)
-      .join(','),
+    ],
     async controller({ id }) {
-      const sql = `
-        select ${this.fields} from "usersChats" 
-        join "users" on "userId" = id 
-        where "chatId" = $1
-      `;
-      const data = await chats.query(sql, [id]);
+      const data = await db('usersChats')
+        .join('users', { userId: 'id' })
+        .where({ chatId: id });
       return { success: true, data };
     },
   },
@@ -95,14 +92,10 @@ const users = db('users');
     },
     controller: async ({ chatId }, cookie) => {
       const token = cookie.get('token');
-      const [user] = await users.read(['id'], { token });
-      const { id: userId } = user;
-      const sql = `
-        update "usersChats"
-        set "lastTimeInChat" = current_timestamp
-        where "userId" = $1 and "chatId" = $2
-      `;
-      await users.query(sql, [userId, chatId]);
+      const { id } = await db('users').select(['id']).where({ token }).first();
+      await db('usersChats')
+        .update({ lastTimeInChat: db.fn.now() })
+        .where({ userId: id, chatId });
       return { success: true };
     },
   },

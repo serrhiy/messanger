@@ -44,7 +44,9 @@ export default class Dialog {
       this.addMessage(message, true);
       this.#onMessage?.(message);
     });
-    const time = lastOnline ? 'was online at ' + transformDate(new Date(lastOnline)) : 'last seen recently';
+    const time = lastOnline
+      ? 'was online at ' + transformDate(new Date(lastOnline))
+      : 'last seen recently';
     this.#header = new DialogHeader(username, time);
     this.#messages = messages;
   }
