@@ -1,0 +1,26 @@
+{
+  "static": {
+    "port": 8000
+  },
+  "api": {
+    "port": 8080
+  },
+  "websocket": {
+    "port": 8088
+  },
+  "sandbox": {
+    "timeout": 5000,
+    "displayErrors": false
+  },
+  "db": {
+    "client": "pg",
+    "connection": {
+      "host": "127.0.0.1",
+      "port": 5432,
+      "database": "messanger",
+      "user": "trajan",
+      "password": "1111"
+    },
+    "pool": { "min": 0, "max": 15 }
+  }
+}

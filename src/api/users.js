@@ -1,24 +1,8 @@
-const users = db('users');
-
-const queryByString = (fields, limit = 10) => {
-  const tokens = [];
-  const values = [];
-  let index = 1;
-  for (const [key, value] of Object.entries(fields)) {
-    if (value === undefined) continue;
-    tokens.push('"' + key + '" ilike $' + index);
-    values.push('%' + value + '%');
-    index++;
-  }
-  const condition = tokens.join(' or ') + ' limit ' + limit;
-  return { condition, values };
-};
-
 const random = (min, max) => {
   const minCeiled = Math.ceil(min);
   const maxFloored = Math.floor(max);
   return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
-}
+};
 
 ({
   create: {
@@ -50,13 +34,13 @@ const random = (min, max) => {
     async controller(body, cookie) {
       const avatar = this.avatars[random(0, this.avatars.length)];
       const { username, password } = body;
-      const exists = await users.exists({ username });
-      if (exists) {
+      const user = await db('users').where({ username }).first();
+      if (user) {
         return { success: false, message: `User ${username} already exists` };
       }
       const hashed = await common.hashPassword(password);
       const token = common.generateToken();
-      await users.create({ ...body, password: hashed, token , avatar });
+      await db('users').insert({ ...body, password: hashed, token, avatar });
       cookie.set('token', token);
       return { success: true };
     },
@@ -74,12 +58,12 @@ const random = (min, max) => {
         validators: [isString, (str) => str.length >= 4],
       },
     },
-    controller: async ({ username, password }, cookie) => {
-      const persons = await users.read(['password', 'token'], { username });
-      if (persons.length === 0) {
-        return { success: false, message: "User doesn't exist" };
-      }
-      const user = persons[0];
+    fields: ['password', 'token'],
+    async controller({ username, password }, cookie) {
+      const { fields } = this;
+      const selector = { username };
+      const user = await db('users').select(fields).where(selector).first();
+      if (!user) return { success: false, message: "User doesn't exist" };
       const valid = await common.validatePassword(password, user.password);
       if (!valid) return { success: false, message: 'Invalid password' };
       cookie.set('token', user.token);
@@ -104,17 +88,15 @@ const random = (min, max) => {
       'lastOnline',
     ],
     async controller(body) {
-      const { username, firstName, secondName, id } = body;
-      if (id) {
-        const user = await users.read(this.fields, { id });
-        return { success: true, data: user };
+      const query = db('users').select(this.fields);
+      if ('id' in body) {
+        const data = await query.where({ id: body.id }).first();
+        return { success: true, data };
       }
-      const selectors = { username, firstName, secondName };
-      const { condition, values } = queryByString(selectors);
-      const fieldsStr = this.fields.map((field) => `"${field}"`).join(',');
-      const sql = `select ${fieldsStr} from "users" where ` + condition;
-      const persons = await users.query(sql, values);
-      return { success: true, data: persons };
+      for (const [key, value] of Object.entries(body)) {
+        if (value) query.orWhereILike(key, `%${value}%`);
+      }
+      return { success: true, data: await query };
     },
   },
 
@@ -124,7 +106,8 @@ const random = (min, max) => {
     fields: ['id', 'username', 'firstName', 'secondName', 'lastOnline'],
     async controller(body, cookie) {
       const token = cookie.get('token');
-      const [user] = await users.read(this.fields, { token });
+      const { fields } = this;
+      const user = await db('users').select(fields).where({ token }).first();
       return { success: true, data: user };
     },
   },
@@ -134,12 +117,7 @@ const random = (min, max) => {
     structure: {},
     controller: async (body, cookie) => {
       const token = cookie.get('token');
-      const sql = `
-        update users 
-        set "lastOnline" = current_timestamp 
-        where token = $1
-      `;
-      await users.query(sql, [token]);
+      await db('users').update({ lastOnline: db.fn.now() }).where({ token });
       return { success: true };
     },
   },

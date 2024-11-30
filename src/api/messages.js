@@ -1,5 +1,3 @@
-const messages = db('messages');
-
 ({
   create: {
     needToken: true,
@@ -12,14 +10,13 @@ const messages = db('messages');
       },
     },
     controller: async ({ userId, chatId, message }) => {
-      const { id } = await messages.create({ userId, chatId, message });
-      const sql = `
-        select users.token from "usersChats" 
-        join users on "userId"=id 
-        where "chatId"=$1 and "userId"!=$2
-      `;
-      const participants = await messages.query(sql, [chatId, userId]);
-      events.emit('message', message, participants, chatId, userId);
+      const { id } = await db('messages').insert({ userId, chatId, message });
+      const users = await db('usersChats')
+        .select(['token'])
+        .join('users', { userId: 'id' })
+        .where({ chatId })
+        .whereNot({ userId });
+      events.emit('message', message, users, chatId, userId);
       return { success: true, data: { id, userId, chatId, message } };
     },
   },
@@ -30,7 +27,7 @@ const messages = db('messages');
     },
     fields: ['id', 'message', 'chatId', 'userId', 'createdAt'],
     async controller({ chatId }) {
-      const data = await messages.read(this.fields, { chatId });
+      const data = await db('messages').select(this.fields, { chatId });
       return { success: true, data };
     },
   },

@@ -70,8 +70,7 @@ const main = async () => {
       if (chat.isActive()) {
         await api.chats.updateOnline({ chatId });
       }
-    }
-    else if (type === 'chat') {
+    } else if (type === 'chat') {
       if (!data.isDialog) return;
       const name = data.user.firstName + ' ' + data.user.secondName;
       const { avatar } = data.user;
