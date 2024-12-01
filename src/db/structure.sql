@@ -19,9 +19,6 @@ create unique index "akUserToken" on "users" ("token");
 
 create table "chats" (
   "id"        bigint generated always as identity,
-  "name"      varchar(64) check (length("name") >= 1),
-  "avatar"    varchar(256),
-  "isDialog"  boolean default true,
   "createdAt" timestamptz default current_timestamp
 );
 
@@ -29,9 +26,9 @@ alter table "chats" add constraint "pkChats" primary key ("id");
 create index "akChatId" on "chats" ("id");
 
 create table "usersChats" (
-  "userId"           bigint not null,
-  "chatId"           bigint not null,
-  "lastTimeInChat"   timestamptz default '-infinity'::timestamptz
+  "userId"         bigint not null,
+  "chatId"         bigint not null,
+  "lastTimeInChat" timestamptz default current_timestamp
 );
 
 alter table "usersChats" add constraint "pkUsersChats" primary key ("userId", "chatId");
@@ -40,6 +37,14 @@ alter table "usersChats" add constraint "fkUsersChatsUserId"
 alter table "usersChats" add constraint "fkUsersChatsChatId" 
   foreign key ("chatId") references "chats" ("id");
 
+create table "chatsInfo" (
+  "chatId" bigint not null,
+  "name"   varchar(64) check (length("name") >= 1) not null,
+  "avatar" varchar(256)
+);
+
+alter table "chatsInfo" add constraint "fkChatsInfoChatsId"
+  foreign key ("chatId") references "chats" ("id");
 
 create table "messages" (
   "id"        bigint generated always as identity,

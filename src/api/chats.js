@@ -2,6 +2,7 @@
   create: {
     needToken: true,
     structure: {
+      avatar: { mandatory: false, validators: [isString] },
       name: {
         mandatory: false,
         validators: [isString, (str) => str.length >= 1],
@@ -10,42 +11,25 @@
         mandatory: true,
         validators: [
           Array.isArray,
-          (users) => users.length >= 2,
+          (users) => users.length > 0,
           (users) => users.every(isNumber),
         ],
       },
-      avatar: { mandatory: false, validators: [isString] },
     },
-    fields: [
-      'id',
-      'username',
-      'firstName',
-      'secondName',
-      'avatar',
-      'lastOnline',
-    ],
-    async controller({ name, avatar, users: persons }, cookie) {
+    fields: ['id', 'createdAt'],
+    async controller({ name, avatar, users }, cookie) {
       const token = cookie.get('token');
-      const { fields } = this;
-      const user = await db('users').select(fields).where({ token }).first();
-      const isDialog = persons.length === 2 ? true : false;
-      const [chat] = await db('chats')
-        .insert({ name, avatar, isDialog })
-        .returning(['id', 'createdAt']);
-      const { id, createdAt } = chat;
-      const promises = persons.map((userId) =>
-        db('usersChats').insert({ chatId: id, userId }),
+      const me = await db('users').select('id').where({ token }).first();
+      const [chat] = await db('chats').insert({}).returning(this.fields);
+      const promises = [...users, me.id].map((userId) =>
+        db('usersChats').insert({ userId, chatId: chat.id })
       );
       await Promise.all(promises);
-      const data = { id, createdAt, name, avatar, isDialog };
-      const users = await db('usersChats')
-        .select(['token', 'username'])
-        .join('users', { userId: 'id' })
-        .where({ chatId: id })
-        .whereNot({ userId: user.id });
-      if (isDialog) data.user = user;
-      events.emit('chat', users, data);
-      return { success: true, data };
+      events.emit('chat', chat.id, cookie.get('token'));
+      if (users.length > 1) {
+        await db('chatsInfo').insert({ name, avatar, chatId: chat.id });
+      }
+      return { success: true, data: chat };
     },
   },
 
@@ -54,7 +38,7 @@
     structure: {
       userId: { mandatory: true, validators: [isNumber] },
     },
-    fields: ['id', 'name', 'avatar', 'isDialog', 'createdAt', 'lastTimeInChat'],
+    fields: ['id', 'createdAt'],
     async controller({ userId }) {
       const data = await db('usersChats')
         .select(this.fields)

@@ -4,7 +4,7 @@ const https = require('node:https');
 const WebSocket = require('websocket');
 const parseCookie = require('../parseCookie.js');
 
-module.exports = (options, port, events, validator) => {
+module.exports = (options, port, events, validator, db) => {
   const server = https.createServer(options);
   const ws = new WebSocket(server, { port }, validator);
   const connections = new Map();
@@ -24,9 +24,13 @@ module.exports = (options, port, events, validator) => {
       connection.write(JSON.stringify({ type: 'message', data }));
     }
   });
-  events.on('chat', (users, chat) => {
-    for (const user of users) {
-      const { token } = user;
+  events.on('chat', async (chatId, usersToken) => {
+    const users = await db('usersChats')
+      .select('token')
+      .join('users', { userId: 'id' })
+      .where({ chatId })
+      .whereNot({ token: usersToken });
+    for (const { token } of users) {
       if (!connections.has(token)) continue;
       const connection = connections.get(token);
       connection.write(JSON.stringify({ type: 'chat', data: chat }));

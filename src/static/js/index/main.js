@@ -39,8 +39,7 @@ const onSerach = (me) => async () => {
     chat.addEventListener(
       'click',
       async () => {
-        const data = { users: [me.id, user.id] };
-        const response = await api.chats.create(data);
+        const response = await api.chats.create({ users: [user.id] });
         const { createdAt: created, id: chatId, isDialog } = response;
         const createdAt = new Date(created);
         const options = { name, chatId, avatar, createdAt, isDialog, user };

@@ -47,7 +47,13 @@ const main = async () => {
   const validator = checkToken(db);
   staticServer(options, config.static.port, staticpath, proxy(db));
   apiServer(options, config.api.port, controllers, validator);
-  wsServer(options, config.websocket.port, events, validator);
+  wsServer(options, config.websocket.port, events, validator, db);
 };
 
 main();
+
+// const db = require('knex')({ client: 'pg' });
+
+// const data = db('chats').insert({}).returning(['id', 'createdAt']);
+
+// console.log(data.toSQL());
