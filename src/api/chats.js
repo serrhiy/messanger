@@ -35,15 +35,15 @@
 
   read: {
     needToken: true,
-    structure: {
-      userId: { mandatory: true, validators: [isNumber] },
-    },
+    structure: {},
     fields: ['id', 'createdAt'],
-    async controller({ userId }) {
+    async controller(body, cookie) {
+      const token = cookie.get('token');
+      const user = await db('users').select('id').where({ token }).first();
       const data = await db('usersChats')
         .select(this.fields)
         .join('chats', { chatId: 'id' })
-        .where({ userId });
+        .where({ userId: user.id });
       return { success: true, data };
     },
   },
