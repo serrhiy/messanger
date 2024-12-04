@@ -81,7 +81,7 @@ export default class Dialog extends EventTarget {
   user = null;
   chat = null;
 
-  constructor(me, user, chat, messages = []) {
+  constructor(me, user, chat = {}, messages = []) {
     super();
     const name = user.firstName + ' ' + user.secondName;
     if (messages.length > 0) {
@@ -144,5 +144,9 @@ export default class Dialog extends EventTarget {
 
   makeActive() {
     this.#dialog.html.classList.add('active');
+  }
+
+  trigerClick(event) {
+    this.#dialog.html.dispatchEvent(event);
   }
 }

@@ -30,7 +30,7 @@ export default class Messages {
   #onMessage = null;
   #messagesDiv = null;
 
-  constructor(user, messages) {
+  constructor(user, messages, lastOnline) {
     const messagesDiv = buildMessages();
     for (const { message, createdAt, myMessage } of messages) {
       const time = transformDate(createdAt);

@@ -12,7 +12,8 @@
       const token = cookie.get('token');
       const user = await db('users').select('id').where({ token }).first();
       const data = { chatId, message, userId: user.id };
-      const { id } = await db('messages').insert(data);
+      const [messages] = await db('messages').insert(data).returning('id');
+      const { id } = messages;
       const users = await db('usersChats')
         .select(['token'])
         .join('users', { userId: 'id' })

@@ -62,18 +62,11 @@
       'lastTimeInChat',
     ],
     async controller({ id }, cookie) {
-      const token = cookie.get('token');
-      const users = await db('usersChats')
+      const data = await db('usersChats')
         .select(this.fields)
         .join('users', { userId: 'id' })
-        .where({ chatId: id })
-        .whereNot({ token });
-      const me = await db('usersChats')
-        .select(this.fields)
-        .join('users', { userId: 'id' })
-        .where({ chatId: id, token })
-        .first();    
-      return { success: true, data: { users, me } };
+        .where({ chatId: id });  
+      return { success: true, data };
     },
   },
 
