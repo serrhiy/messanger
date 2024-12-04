@@ -36,12 +36,11 @@
   read: {
     needToken: true,
     structure: {},
-    fields: ['id', 'createdAt'],
     async controller(body, cookie) {
       const token = cookie.get('token');
       const user = await db('users').select('id').where({ token }).first();
       const data = await db('usersChats')
-        .select(this.fields)
+        .select(['id', 'createdAt'])
         .join('chats', { chatId: 'id' })
         .where({ userId: user.id });
       return { success: true, data };
@@ -60,12 +59,21 @@
       'secondName',
       'avatar',
       'lastOnline',
+      'lastTimeInChat',
     ],
-    async controller({ id }) {
-      const data = await db('usersChats')
+    async controller({ id }, cookie) {
+      const token = cookie.get('token');
+      const users = await db('usersChats')
+        .select(this.fields)
         .join('users', { userId: 'id' })
-        .where({ chatId: id });
-      return { success: true, data };
+        .where({ chatId: id })
+        .whereNot({ token });
+      const me = await db('usersChats')
+        .select(this.fields)
+        .join('users', { userId: 'id' })
+        .where({ chatId: id, token })
+        .first();    
+      return { success: true, data: { users, me } };
     },
   },
 
@@ -76,7 +84,7 @@
     },
     controller: async ({ chatId }, cookie) => {
       const token = cookie.get('token');
-      const { id } = await db('users').select(['id']).where({ token }).first();
+      const { id } = await db('users').select(['id']).where({ token }).first();      
       await db('usersChats')
         .update({ lastTimeInChat: db.fn.now() })
         .where({ userId: id, chatId });

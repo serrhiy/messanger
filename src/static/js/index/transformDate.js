@@ -2,4 +2,10 @@
 
 const options = { hour: 'numeric', minute: 'numeric', hour12: true };
 
-export default (date = new Date()) => date.toLocaleString('en-US', options);
+const transformDate = (date = new Date()) => {
+  const instance = date instanceof Date;
+  if (!instance) return transformDate(new Date(date));
+  return date.toLocaleString('en-US', options);
+}
+
+export default transformDate;

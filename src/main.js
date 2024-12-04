@@ -51,9 +51,3 @@ const main = async () => {
 };
 
 main();
-
-// const db = require('knex')({ client: 'pg' });
-
-// const data = db('chats').insert({}).returning(['id', 'createdAt']);
-
-// console.log(data.toSQL());

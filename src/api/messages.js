@@ -28,8 +28,13 @@
       chatId: { mandatory: true, validators: [isNumber] },
     },
     fields: ['id', 'message', 'chatId', 'userId', 'createdAt'],
-    async controller({ chatId }) {
-      const data = await db('messages').select(this.fields, { chatId });
+    async controller({ chatId }, cookie) {
+      const token = cookie.get('token');
+      const user = await db('users').select('id').where({ token }).first();
+      const data = await db('messages')
+        .select(this.fields)
+        .select(db.raw('"userId" = ? as "myMessage"', [user.id]))
+        .where({ chatId });
       return { success: true, data };
     },
   },
