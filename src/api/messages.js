@@ -12,14 +12,9 @@
       const token = cookie.get('token');
       const user = await db('users').select('id').where({ token }).first();
       const data = { chatId, message, userId: user.id };
-      const [messages] = await db('messages').insert(data).returning('id');
+      const [messages] = await db('messages').insert(data).returning('*');
       const { id } = messages;
-      const users = await db('usersChats')
-        .select(['token'])
-        .join('users', { userId: 'id' })
-        .where({ chatId })
-        .whereNot({ userId: user.id });
-      events.emit('message', message, users, chatId, user.id);
+      events.emit('message', messages, token);
       return { success: true, data: { id, userId: user.id, chatId, message } };
     },
   },

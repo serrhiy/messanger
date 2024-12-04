@@ -25,7 +25,7 @@
         db('usersChats').insert({ userId, chatId: chat.id })
       );
       await Promise.all(promises);
-      events.emit('chat', chat.id, cookie.get('token'));
+      events.emit('chat', chat, cookie.get('token'));
       if (users.length > 1) {
         await db('chatsInfo').insert({ name, avatar, chatId: chat.id });
       }

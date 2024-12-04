@@ -15,20 +15,25 @@ module.exports = (options, port, events, validator, db) => {
       connections.delete(token);
     });
   });
-  events.on('message', (message, users, chatId, userId) => {
+  events.on('message', async (message, usersToken) => {
+    const users = await db('usersChats')
+      .select('token')
+      .join('users', { userId: 'id' })
+      .where({ chatId: message.chatId })
+      .whereNot({ token: usersToken });
     for (const user of users) {
       const { token } = user;
       if (!connections.has(token)) continue;
       const connection = connections.get(token);
-      const data = { message, chatId, userId };
-      connection.write(JSON.stringify({ type: 'message', data }));
+      const json = JSON.stringify({ type: 'message', data: message });
+      connection.write(json);
     }
   });
-  events.on('chat', async (chatId, usersToken) => {
+  events.on('chat', async (chat, usersToken) => {
     const users = await db('usersChats')
       .select('token')
       .join('users', { userId: 'id' })
-      .where({ chatId })
+      .where({ chatId: chat.id })
       .whereNot({ token: usersToken });
     for (const { token } of users) {
       if (!connections.has(token)) continue;
